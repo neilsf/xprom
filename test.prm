@@ -3,5 +3,10 @@ const byte MYYY_2 = $00af
 global real HWorld[8]
 const int Myhello = -0.3344
 
+ext real _MYHelloReal[5] at $ffd0
+ext asm func word MyExtFunction at 32456
+
+data real MyData = 12.33, 31, "Hello'world 344", 441.3, 9, $af, 5
+
 begin
 end

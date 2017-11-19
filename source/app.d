@@ -5,10 +5,20 @@ import program;
 
 mixin(grammar(`
 PROMAL:
-    Program < Program_decl WS (Const_def / Global_decl)* "begin" WS "end" WS?
+    Program < Program_decl WS (Const_def / Global_decl / Ext_decl / Data_def)* "begin" WS "end" WS?
     Program_decl < "program" WS id "own"? "export"?
     Const_def < "const" WS ("byte" / "word" / "int" / "real") WS id WS? "=" WS? Number WS
     Global_decl < "global" WS ("byte" / "word" / "int" / "real") WS id ("[" Number "]")? WS
+    Ext_decl < "ext" WS (Var_decl / Asm_decl) WS ("at" (Number / id))? WS
+    Var_decl < ("byte" / "word" / "int" / "real") WS id "[" (Number / id)? "]"
+    Asm_decl < "asm" WS ("func" / "proc") WS ("byte" / "word" / "int" / "real") WS id
+    Data_def < "data" WS ("byte" / "word" / "int" / "real") WS id "[]"? WS? "=" WS? Data_member (WS? "," WS? Data_member)* WS
+    Data_member < String / Number
+
+    Factor < ("'" Char "'") / ('"' Char '"') / "true" / "false" / ("not" Factor) / Number / ("#"? Var)
+    Var < id ("[" Exp "]")?
+    Exp < [a-z]+
+    Cast < ":<" / ":>" / ":-" / ":+" / ":." / "@<" / "@-" / "@+" / "@."
 
     WS <~ (space / eol / Comment)*
     Comment <~ "//" (!eol .)* eol
@@ -17,6 +27,12 @@ PROMAL:
     EOI <- !.
 
     Number <~ Scientific / Floating / Integer / Hexa
+    String <~ :doublequote Char* :doublequote
+    Char   <~ backslash doublequote
+            / backslash backslash
+            / backslash [bfnrt]
+            / backslash Hexa
+            / (!doublequote .)
 
     Scientific <~ Floating ( ('e' / 'E' ) Integer )?
     Floating   <~ Integer ('.' Unsigned )?
