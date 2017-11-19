@@ -9,4 +9,6 @@ ext asm func word MyExtFunction at 32456
 data real MyData = 12.33, 31, "Hello'world 344", 441.3, 9, $af, 5
 
 begin
+    a
+    b
 end
