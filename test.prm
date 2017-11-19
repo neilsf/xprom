@@ -1,0 +1,7 @@
+program HelloWorld own export
+const byte MYYY_2 = $00af
+global real HWorld[8]
+const int Myhello = -0.3344
+
+begin
+end
