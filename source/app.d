@@ -1,55 +1,52 @@
-import std.stdio, std.file;
+import std.stdio, std.file, std.array;
 
 import pegged.grammar;
 import program;
 
 mixin(grammar(`
 PROMAL:
-    Program < Program_decl WS (Const_def / Global_decl / Ext_decl / Data_def / Sub_def)* "begin" WS Stmt* "end" WS?
+    Program < Program_decl (Const_def / Global_decl / Ext_decl / Data_def / Sub_def)* "begin" NL Stmt+ "end" NL WS?
 
-    Program_decl < "program" WS id "own"? "export"?
-    Const_def < "const" WS Vartype WS id WS? "=" WS? Number WS
-    Global_decl < "global" WS Vartype WS id ("[" Number "]")? WS
-    Ext_decl < "ext" WS (Var_decl / Asm_decl) WS ("at" (Number / id))? WS
+    Program_decl < "program" WS id "own"? "export"? NL
+    Const_def < "const" WS Vartype WS id WS? "=" WS? Number NL
+    Global_decl < "global" WS Vartype WS id ("[" Number "]")? NL
+    Ext_decl < "ext" WS (Var_decl / Asm_decl) WS ("at" (Number / id))? NL
     Var_decl < Vartype WS id "[" (Number / id)? "]"
     Asm_decl < "asm" WS ("func" / "proc") WS Vartype WS id
-    Data_def < "data" WS Vartype WS id "[]"? WS? "=" WS? Data_member (WS? "," WS? Data_member)* WS
+    Data_def < "data" WS Vartype WS id "[]"? WS? "=" WS? Data_member (WS? "," WS? Data_member)* NL
     Data_member < String / Number
 
-    Sub_def < ("proc" / ("func" WS Vartype) ) WS id WS ("arg" WS Vartype WS id WS)* (Vartype id WS)* (Const_def / ("own" WS Global_decl) / Ext_decl / Data_def / ("list" WS Exp? WS))* "begin" WS Stmt+ "end" WS
+    Sub_def < ("proc" / ("func" WS Vartype) ) WS id NL ("arg" WS Vartype WS id NL)* (Vartype id NL)* (Const_def / ("own" WS Global_decl) / Ext_decl / Data_def / ("list" WS Exp? NL))* "begin" NL Stmt+ "end" NL
 
-    Stmt < (Assignment / Proc_call / If_stmt / Choose_stmt / Repeat_stmt / For_stmt / While_stmt / ("refuge" WS Number) / ("escape" WS Number) / "break" / "next" / ("return" WS Exp?) / "nothing" ) WS
+    Stmt < (Assignment / Proc_call / If_stmt / Choose_stmt / Repeat_stmt / For_stmt / While_stmt / ("refuge" WS Number) / ("escape" WS Number) / "break" / "next" / ("return" WS Exp?) / "nothing" ) NL
 
-    Assignment < id WS? (":<" / ":>")? WS? "=" WS? Exp
-    Proc_call < id (WS? Exp (WS? "," WS? Exp)*)?
-    If_stmt < "if" WS Exp WS Stmt+ ("else" WS ("if" WS Exp WS)? Stmt+)* "end if" WS
-    Choose_stmt < "choose" (WS? Exp)? WS ("case" WS Exp WS Stmt+ "end case" WS)+ ("else" WS Stmt+)? "end choose" WS
-    Repeat_stmt < "repeat" WS Stmt+ "until" Exp WS
-    For_stmt < "for" WS id WS? "=" WS? Exp WS "to" WS Exp WS Stmt+ "end for" WS
-    While_stmt < "while" WS Exp WS Stmt+ "end while" WS
+    Assignment < id (":<" / ":>")? "=" Exp
+    Proc_call < "call" WS id (Exp ("," Exp)*)?
+    Func_call < id WS? (WS? "(" WS? Exp WS? (Exp WS? "," WS?)* WS? ")" WS?)?
+    If_stmt < "if" WS Exp NL Stmt+ ("else" WS ("if" WS Exp NL)? Stmt+)* "end if" NL
+    Choose_stmt < "choose" (WS? Exp)? NL ("case" WS Exp NL Stmt+ "end case" NL)+ ("else" NL Stmt+)? "end choose" NL
+    Repeat_stmt < "repeat" NL Stmt+ "until" Exp NL
+    For_stmt < "for" WS id WS? "=" WS? Exp WS "to" WS Exp NL Stmt+ "end for" NL
+    While_stmt < "while" WS Exp NL Stmt+ "end while" NL
 
-    Exp < Relation (WS? ("and" / "or" / "xor") WS? Relation)*
-    Relation < Simplexp (WS? ("<" / "<=" / "<>" / ">=" / ">") WS? Simplexp)
-    Simplexp < "-"? Term (WS? ("+" / "-") WS? Term)*
-    Term < Factor (WS? ("*" / "/" / "%" / "<<" / ">>") WS? Factor)*
-    Factor < ("'" Char "'") / ('"' Char '"') / "true" / "false" / ("not" Factor) / Number / ("#"? Var) / (id WS? (WS? "(" WS? Exp WS? (Exp WS? "," WS?)* WS? ")" WS?)?) / ("(" WS? Exp WS? ")")
+    Exp < Relation (("and" / "or" / "xor") Relation)*
+    Relation < Simplexp (("<" / "<=" / "<>" / ">=" / ">") Simplexp)?
+    Simplexp < "-"? Term (("+" / "-") Term)*
+    Term < Factor (("*" / "/" / "%" / "<<" / ">>") Factor)*
+    Factor <- ("'" Char "'") / String / "true" / "false" / ("not" Factor) / Number / ("#"? Var) / Func_call / ("(" WS? Exp WS? ")")
     Var < id ("[" Exp "]")?
     Cast < ":<" / ":>" / ":-" / ":+" / ":." / "@<" / "@-" / "@+" / "@."
 
-    WS <~ (space / eol / Comment)*
-    Comment <~ "//" (!eol .)* eol
-    id <~ !Keyword [a-zA-Z_] [a-zA-Z_0-9]*
-    nl <- "\n"
-    EOI <- !.
-
-    Keyword <- "program" / "own" / "export" / "con" / "byte" / "word" / "int / "real" / "ext" / "global" / "data" / "proc" / "func" / "begin" / "end" / "asm" / "at" / "arg" / "list" / "if" / "choose" / "while" / "repeat" / "for" / "else" / "return" / "nothing" / "refuge" / "escape" / "break" / "next" / "case" / "else" / "until" / "and" / "or" / "xor" / "true" / "false" / "not"
+    Keyword <- "end" / "program" / "own" / "export" / "con" / "byte"/ "word" / "int" / "real" / "ext" / "global" / "data" / "proc" / "func" / "begin" / "end" / "asm" / "at" / "arg" / "list" / "if" / "choose" / "while" / "repeat" / "for" / "else" / "return" / "nothing" / "refuge" / "escape" / "break" / "next" / "case" / "else" / "until" / "and" / "or" / "xor" / "true" / "false" / "not" / "call"
     Number <~ Scientific / Floating / Integer / Hexa
-    String <~ :doublequote Char* :doublequote
-    Char   <~ backslash doublequote
-            / backslash backslash
-            / backslash [bfnrt]
-            / backslash Hexa
-            / (!doublequote .)
+    String <~ doublequote (!doublequote Char)* doublequote
+    Char    <~ backslash ( doublequote  # '\' Escapes
+                        / quote
+                        / backslash
+                        / [bfnrt]
+                        / 'x' Hexa
+                        )
+                        / . # Or any char, really
 
     Scientific <~ Floating ( ('e' / 'E' ) Integer )?
     Floating   <~ Integer ('.' Unsigned )?
@@ -59,9 +56,15 @@ PROMAL:
     Sign       <- '-' / '+'
 
     Vartype    <- "byte" / "word" / "int" / "real"
+
+    WS <~ (space / eol / Comment)*
+    Comment <~ "//" (!eol .)* eol
+    id <~ !Keyword [a-zA-Z_] [a-zA-Z_0-9]*
+    EOI <- !.
+
+    NL <- ('\r' / '\n' / '\r\n')+
+    Spacing <- :(' ' / '\t')*
 `));
-
-
 
 void main()
 {
@@ -74,15 +77,19 @@ void main()
     writeln(source);
 
     auto ast = PROMAL(source);
-writeln(ast);
+    writeln(ast);
     writeln("Name: "~ast.name);
     writeln("Success? " ~ (ast.successful == true ? "Yes" : "No"));
 
+    byte level = 1;
+
     void processAst(ParseTree node) {
-        writeln("Child name: "~node.name);
+        writeln("  ".replicate(level) ~ "Child name: "~node.name);
+        level +=1;
         foreach(ref child; node.children) {
             processAst(child);
         }
+        level -=1;
     }
 
     Program program = new Program;

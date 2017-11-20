@@ -1,12 +1,12 @@
 {
-	"name": "testproj",
+	"name": "xprom",
 	"authors": [
-		"Fekete Csaba"
+		"Csaba Fekete"
 	],
 	"dependencies": {
 		"pegged": "~>0.4.2"
 	},
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2017, Fekete Csaba",
+	"description": "A PROMAL cross-compiler",
+	"copyright": "Copyright © 2017, Csaba Fekete",
 	"license": "proprietary"
 }
