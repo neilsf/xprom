@@ -148,10 +148,11 @@ CMPWEQ		.macro		;Compare two words on stack for equality
 			BNE false
 			PLA
 			CMP RESERVED2
-			BNE false
+			BNE false+1
 			#PONE
-			JMP end_CMPWEQ
-	false	#PZERO
+			JMP *+7
+	false	PLA
+			#PZERO
 end_CMPWEQ  .endm
 
 CMPWNEQ		.macro		;Compare two words on stack for inequality
@@ -164,10 +165,11 @@ CMPWNEQ		.macro		;Compare two words on stack for inequality
 			BNE true
 			PLA
 			CMP RESERVED2
-			BNE true
+			BNE true+1
 			#PZERO
-			JMP end_CMPWNEQ
-	true	#PONE
+			JMP *+7
+	true	PLA
+			#PONE
 end_CMPWNEQ	.endm
 
 CMPWLT		.macro		;Compare two words on stack for less than (Higher on stack < Lower on stack)
@@ -205,7 +207,7 @@ CMPWGTE		.macro		;Compare two words on stack for greater than or equal (H >= L)
 			INX
 			TXS
 			#PZERO
-			JMP end_CMPWGTE
+			JMP *+11
 	true	INX
 			INX
 			INX
@@ -227,7 +229,7 @@ CMPWGT		.macro		;Compare two words on stack for greater than (H > L)
 			INX
 			TXS
 			#PZERO
-			JMP end_CMPWGT
+			JMP *+11
 	true	INX
 			INX
 			INX
