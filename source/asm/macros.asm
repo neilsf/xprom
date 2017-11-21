@@ -218,10 +218,10 @@ end_CMPWGTE .endm
 
 CMPWGT		.macro		;Compare two words on stack for greater than (H > L)
 			TSX
-			LDA STACK+4, x
-			CMP STACK+2, x
-			LDA STACK+3, x
-			SBC STACK+1, x
+			LDA STACK+2, x
+			CMP STACK+4, x
+			LDA STACK+1, x
+			SBC STACK+3, x
 			BCC true	
 			INX
 			INX
@@ -239,49 +239,39 @@ CMPWGT		.macro		;Compare two words on stack for greater than (H > L)
 end_CMPWGT .endm
 
 CMPIEQ		.macro		;Compare two ints on stack for equality
-			PLA
-			STA RESERVED1
-			PLA
-			STA RESERVED2
-			PLA
-			STA RESERVED3
-			
-			PLA
-			CMP RESERVED1
+			TSX
+			LDA STACK+6, x
+			CMP STACK+3, x
 			BNE false
-			PLA
-			CMP RESERVED2
+			LDA STACK+5, x
+			CMP STACK+2, x
 			BNE false
-			PLA
-			CMP RESERVED3
+			LDA STACK+4, x
+			CMP STACK+1, x
 			BNE false
-			
 			#PONE
-			JMP end_CMPIEQ
+			JMP doinx
 	false	#PZERO
-end_CMPIEQ  .endm
+	doinx	.repeat 6, $e8 ; 6 times INX	
+			TXS
+			.endm
 
 
 CMPINEQ		.macro		;Compare two ints on stack for inequality
-			PLA
-			STA RESERVED1
-			PLA
-			STA RESERVED2
-			PLA
-			STA RESERVED3
-			
-			PLA
-			CMP RESERVED1
-			BNE true
-			PLA
-			CMP RESERVED2
-			BNE true
-			PLA
-			CMP RESERVED3
-			BNE true
-			
-			#PZERO
-			JMP end_CMPINEQ
-	true	#PONE
-end_CMPINEQ  .endm
+			TSX
+			LDA STACK+6, x
+			CMP STACK+3, x
+			BEQ false
+			LDA STACK+5, x
+			CMP STACK+2, x
+			BEQ false
+			LDA STACK+4, x
+			CMP STACK+1, x
+			BEQ false
+			#PONE
+			JMP doinx
+	false	#PZERO
+	doinx	.repeat 6, $e8 ; 6 times INX	
+			TXS
+			.endm
 
