@@ -289,11 +289,14 @@
 			lda stack+4, x
 			cmp stack+1, x
 			bne phf
-			pone
-			jmp doinx
-	phf:	pzero
-	doinx:	.fill 6, $e8  // 6 times inx	
+			.fill 6, $e8
 			txs
+			pone
+			jmp end
+	phf:	.fill 6, $e8	// 6 times inx	
+			txs
+			pzero
+	end:
 }
 
 /* Compare two ints on stack for inequality */
@@ -308,11 +311,14 @@
 			lda stack+4, x
 			cmp stack+1, x
 			beq phf
-			pone
-			jmp doinx
-	phf:	pzero
-	doinx:	.fill 6, $e8	// 6 times inx	
+			.fill 6, $e8
 			txs
+			pone
+			jmp end
+	phf:	.fill 6, $e8	// 6 times inx	
+			txs
+			pzero
+	end:
 }
 
 /* Compare two ints on stack for less than */
@@ -327,10 +333,35 @@
 			lda stack+4, x
 			cmp stack+1, x
 			bmi pht
-			pzero
-			jmp doinx
-	pht:	pone
-	doinx:	.fill 6, $e8	// 6 times inx	
+			.fill 6, $e8
 			txs
+			pzero
+			jmp end
+	pht:	.fill 6, $e8	// 6 times inx	
+			txs
+			pone
+	end:
+}
+
+/* Compare two ints on stack for greater than or equal */
+.pseudocommand cmpigte {
+			tsx
+			lda stack+4, x
+			cmp stack+1, x
+			bmi phf
+			lda stack+5, x
+			cmp stack+2, x
+			bmi phf
+			lda stack+6, x
+			cmp stack+3, x
+			bmi phf
+			.fill 6, $e8
+			txs
+			pone
+			jmp end
+	phf:	.fill 6, $e8	// 6 times inx	
+			txs
+			pzero
+	end:
 }
 
