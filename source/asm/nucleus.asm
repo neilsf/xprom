@@ -1,8 +1,8 @@
-RESERVED1	= $fc
-RESERVED2	= $fd
-RESERVED3	= $fe
-RESERVED4	= $ff
-STACK = $0100
+.var reserved1	= $fc
+.var reserved2	= $fd
+.var reserved3	= $fe
+.var reserved4	= $ff
+.var stack = $0100
 
 /* Push a zero on the stack */
 .pseudocommand pzero {
@@ -108,10 +108,10 @@ STACK = $0100
 			sta reserved1
 			pla
 			cmp reserved1
-			bcc true
+			bcc pht
 			pzero
 			jmp end
-	true:	pone
+	pht:	pone
 	end:  
 }
 
@@ -121,10 +121,10 @@ STACK = $0100
 			sta reserved1
 			pla
 			cmp reserved1
-			bcs true
+			bcs pht
 			pzero
 			jmp end
-	true:	pone
+	pht:	pone
 	end:
 }
 
@@ -134,10 +134,10 @@ STACK = $0100
 			sta reserved1
 			pla
 			cmp reserved1
-			beq true
+			beq pht
 			pzero
 			jmp end
-	true:	pone
+	pht:	pone
 	end:
 }
 
@@ -147,10 +147,10 @@ STACK = $0100
 			sta reserved1
 			pla
 			cmp reserved1
-			bne true
+			bne pht
 			pzero
 			jmp end
-	true:	pone
+	pht:	pone
 	end:
 }
 
@@ -160,10 +160,10 @@ STACK = $0100
 			sta reserved1
 			pla
 			cmp reserved1
-			bcs false
+			bcs phf
 			pone
 			jmp end
-	false:	pzero
+	phf:	pzero
 	end:
 }
 
@@ -175,13 +175,13 @@ STACK = $0100
 			sta reserved2
 			pla
 			cmp reserved1
-			bne false
+			bne phf
 			pla
 			cmp reserved2
-			bne false+1
+			bne phf+1
 			pone
 			jmp end
-	false:	pla
+	phf:	pla
 			pzero
 	end:
 }
@@ -194,13 +194,13 @@ STACK = $0100
 			sta reserved2
 			pla
 			cmp reserved1
-			bne true
+			bne pht
 			pla
 			cmp reserved2
-			bne true+1
+			bne pht+1
 			pzero
 			jmp end
-	true:	pla
+	pht:	pla
 			pone
 	end:
 }
@@ -212,7 +212,7 @@ STACK = $0100
 			cmp stack+2, x
 			lda stack+3, x
 			sbc stack+1, x
-			bcs false			
+			bcs phf			
 			inx
 			inx
 			inx
@@ -220,7 +220,7 @@ STACK = $0100
 			txs
 			pone
 			jmp end
-	false:	inx
+	phf:	inx
 			inx
 			inx
 			inx
@@ -236,7 +236,7 @@ STACK = $0100
 			cmp stack+2, x
 			lda stack+3, x
 			sbc stack+1, x
-			bcs true	
+			bcs pht	
 			inx
 			inx
 			inx
@@ -244,7 +244,7 @@ STACK = $0100
 			txs
 			pzero
 			jmp end
-	true:	inx
+	pht:	inx
 			inx
 			inx
 			inx
@@ -260,7 +260,7 @@ STACK = $0100
 			cmp stack+4, x
 			lda stack+1, x
 			sbc stack+3, x
-			bcc true	
+			bcc pht	
 			inx
 			inx
 			inx
@@ -268,7 +268,7 @@ STACK = $0100
 			txs
 			pzero
 			jmp end
-	true:	inx
+	pht:	inx
 			inx
 			inx
 			inx
@@ -282,16 +282,16 @@ STACK = $0100
 			tsx
 			lda stack+6, x
 			cmp stack+3, x
-			bne false
+			bne phf
 			lda stack+5, x
 			cmp stack+2, x
-			bne false
+			bne phf
 			lda stack+4, x
 			cmp stack+1, x
-			bne false
+			bne phf
 			pone
 			jmp doinx
-	false:	pzero
+	phf:	pzero
 	doinx:	.fill 6, $e8  // 6 times inx	
 			txs
 }
@@ -301,16 +301,35 @@ STACK = $0100
 			tsx
 			lda stack+6, x
 			cmp stack+3, x
-			beq false
+			beq phf
 			lda stack+5, x
 			cmp stack+2, x
-			beq false
+			beq phf
 			lda stack+4, x
 			cmp stack+1, x
-			beq false
+			beq phf
 			pone
 			jmp doinx
-	false:	pzero
+	phf:	pzero
+	doinx:	.fill 6, $e8	// 6 times inx	
+			txs
+}
+
+/* Compare two ints on stack for less than */
+.pseudocommand cmpilt {
+			tsx
+			lda stack+6, x
+			cmp stack+3, x
+			bmi pht
+			lda stack+5, x
+			cmp stack+2, x
+			bmi pht
+			lda stack+4, x
+			cmp stack+1, x
+			bmi pht
+			pzero
+			jmp doinx
+	pht:	pone
 	doinx:	.fill 6, $e8	// 6 times inx	
 			txs
 }
