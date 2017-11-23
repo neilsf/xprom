@@ -324,22 +324,24 @@
 /* Compare two ints on stack for less than */
 .pseudocommand cmpilt {
 			tsx
-			lda stack+6, x
-			cmp stack+3, x
-			bmi pht
-			lda stack+5, x
-			cmp stack+2, x
-			bmi pht
 			lda stack+4, x
 			cmp stack+1, x
-			bmi pht
+			beq !+
+			bpl phf
+	!:		lda stack+5, x
+			cmp stack+2, x
+			beq !+
+			bpl phf
+	!:		lda stack+6, x
+			cmp stack+3, x
+			bpl phf
 			.fill 6, $e8
 			txs
-			pzero
-			jmp end
-	pht:	.fill 6, $e8	// 6 times inx	
-			txs
 			pone
+			jmp end
+	phf:	.fill 6, $e8	// 6 times inx	
+			txs
+			pzero
 	end:
 }
 
@@ -365,3 +367,136 @@
 	end:
 }
 
+/* Compare two ints on stack for less than or equal */
+.pseudocommand cmpilte {
+			tsx
+			lda stack+4, x
+			cmp stack+1, x
+			beq !+
+			bpl phf
+	!:		lda stack+5, x
+			cmp stack+2, x
+			beq !+
+			bpl phf
+	!:		lda stack+6, x
+			cmp stack+3, x
+			bpl !+
+			bpl phf
+	!:		.fill 6, $e8
+			txs
+			pone
+			jmp end
+	phf:	.fill 6, $e8	// 6 times inx	
+			txs
+			pzero
+	end:
+}
+
+/* Compare two ints on stack for greater than */
+.pseudocommand cmpigt {
+			tsx
+			lda stack+4, x
+			cmp stack+1, x
+			beq !+
+			bpl pht
+	!:		lda stack+5, x
+			cmp stack+2, x
+			beq !+
+			bpl pht
+	!:		lda stack+6, x
+			cmp stack+3, x
+			beq !+
+			bpl pht
+	!:		.fill 6, $e8
+			txs
+			pzero
+			jmp end
+	pht:	.fill 6, $e8	// 6 times inx	
+			txs
+			pone
+	end:
+}
+
+/* Add bytes on stack */
+.pseudocommand addb {
+		pla
+		tsx
+		clc
+		adc stack+1,x
+		sta stack+1,x
+}
+
+/* Add words on stack */
+.pseudocommand addw {
+		tsx
+		lda stack+2,x
+		clc
+		adc stack+4,x
+		sta stack+4,x
+		pla
+		adc stack+3,x
+		sta stack+3,x
+		pla
+}
+
+/* Add ints on stack */
+.pseudocommand addi {
+		tsx
+		clc
+		lda stack+3, x
+		adc stack+6, x
+		sta stack+6, x
+		lda stack+2, x
+		adc stack+5, x
+		sta stack+5, x
+		pla
+		adc stack+4, x
+		sta stack+4, x
+		inx
+		inx
+		txs
+}
+
+/* Substract bytes on stack */
+.pseudocommand subb {
+		tsx
+		lda stack+2,x
+		sec
+		sbc stack+1,x
+		sta stack+2,x
+		pla
+}
+
+/* Substract words on stack */
+.pseudocommand subw {
+		tsx
+		lda stack+4, x
+		sec
+		sbc stack+2, x
+		sta stack+4, x
+		lda stack+3, x
+		sbc stack+1, x
+		sta stack+3, x
+		inx
+		inx
+		txs
+}
+
+/* Substract ints on stack */
+.pseudocommand subi {
+		tsx
+		sec
+		lda stack+6, x
+		sbc stack+3, x
+		sta stack+6, x
+		lda stack+5, x
+		sbc stack+2, x
+		sta stack+5, x
+		lda stack+4, x
+		sbc stack+1, x
+		sta stack+4, x
+		inx
+		inx
+		inx
+		txs
+}
