@@ -500,3 +500,25 @@
 		inx
 		txs
 }
+
+/* Multiply bytes on stack
+by White Flame 20030207 */
+.pseudocommand mulb {
+		pla
+		sta reserved1
+		pla
+		sta reserved2
+		lda #$00
+		beq enterLoop		
+doAdd:
+		clc
+		adc reserved1	
+loop:		
+		asl reserved1
+enterLoop:
+		lsr reserved2
+		bcs doAdd
+		bne loop
+end:	
+		pha
+}
