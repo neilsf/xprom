@@ -74,25 +74,16 @@ void main()
         source = source ~ infile.readln();
     }
 
-    writeln(source);
+    //writeln(source);
 
     auto ast = PROMAL(source);
     writeln(ast);
     writeln("Name: "~ast.name);
     writeln("Success? " ~ (ast.successful == true ? "Yes" : "No"));
 
-    byte level = 1;
-
-    void processAst(ParseTree node) {
-        writeln("  ".replicate(level) ~ "Child name: "~node.name);
-        level +=1;
-        foreach(ref child; node.children) {
-            processAst(child);
-        }
-        level -=1;
-    }
-
     Program program = new Program;
-    processAst(ast);
+    program.processAst(ast);
+    
+    writeln(program.constants);
 }
 
