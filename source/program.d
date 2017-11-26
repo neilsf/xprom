@@ -3,9 +3,10 @@ import pegged.grammar;
 import core.stdc.stdlib;
 
 struct Variable {
-    short location;
+    ushort location;
     string name;
     char type;
+    ushort[3] array_subscript;
 }
 
 struct Const {
@@ -39,9 +40,51 @@ class Program
         this.settings = ProgramSettings(0xc000, 0xcfff, 0x0801, 0x9999);
     }
 
-    void declareVariable(string name, char type )
+    bool constExists(string id)
     {
-		
+        foreach(ref elem; this.variables) {
+    		if(id == elem.name) {
+    			return true;
+    		}
+    	}
+
+    	return false;
+    }
+
+    Const getConst(string name)
+    {
+        foreach(elem; this.constants) {
+            if(elem.name == name) {
+                return elem;
+            }
+        }
+
+        assert(0);
+    }
+
+    void globalVariable(ParseTree node)
+    {
+		string varname;
+        string vartype;
+        Const constant;
+        ushort uvalue;
+        ushort[3] array_subscript = [1,1,1];
+
+        varname = node.children[0].matches[0];
+        vartype = node.children[1].matches[0];
+
+        for(ubyte i=2; i<=node.children.length-2; i++) {
+          if(this.constExists(node.children[i].matches[0])) {
+            constant = this.getConst(node.children[i].matches[0]);
+            uvalue = cast(ushort)constant.ivalue;
+          }
+          else {
+            uvalue = cast(ushort)this.parseInt(node.children[i].matches[0]);
+          }
+            array_subscript[i-2] = uvalue;
+        }
+
+        this.variables ~= Variable(0xc000, varname, vartype[0], array_subscript);
     }
     
     void processProgram(ParseTree node)
@@ -54,12 +97,22 @@ class Program
     {
 	    float floatval;
 	    int intval;
-    
-    	writeln(" FOUND CONST DEF ");	
-			string vartype = node.children[0].matches[0];
-			string id = node.children[1].matches[0];
-			string value = node.children[2].matches[0];
-    	if(vartype == "real") {
+        string vartype;
+        string id;
+        string value;
+
+        if(node.children[0].name == "PROMAL.Vartype") {
+            vartype = node.children[0].matches[0];
+            id = node.children[1].matches[0];
+            value = node.children[2].matches[0];
+        }
+        else {
+            id = node.children[0].matches[0];
+            value = node.children[1].matches[0];
+            vartype = this.guessTheType(value);
+        }
+
+    	if(vartype[0] == 'r') {
     		floatval = this.parseFloat(value);
     		intval = 0;
     	}
@@ -70,6 +123,7 @@ class Program
     	
     	assertIdExists(id);
     	this.constants ~= Const(id, vartype[0], floatval, intval);
+        writeln(this.constants);
     	
     }
     
@@ -80,20 +134,20 @@ class Program
     
     int parseInt(string strval)
     {
-			try {
-				if(strval[0] == '$') {
-						return to!int(strval[1..$] ,16);
-					}
-					else if(strval[0] == '%') {
-						return to!int(strval[1..$] ,2);
-					}
-					else {
-						return to!int(strval);
-					}
-			} catch (std.conv.ConvException e) {
-				writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
-				exit(1);
-			}
+		try {
+			if(strval[0] == '$') {
+					return to!int(strval[1..$] ,16);
+				}
+				else if(strval[0] == '%') {
+					return to!int(strval[1..$] ,2);
+				}
+				else {
+					return to!int(strval);
+				}
+		} catch (std.conv.ConvException e) {
+			writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
+			exit(1);
+		}
 		
 			return 0;
     }
@@ -122,6 +176,23 @@ class Program
     	
     	return false;
     }
+
+    string guessTheType(string number)
+    {
+        if(number.indexOfAny(".") > -1) {
+            return "r";
+        }
+        int numericval = this.parseInt(number);
+        if(numericval < 0 ||  numericval > 65535) {
+            return "i";
+        }
+        else if(numericval > 255) {
+            return "w";
+        }
+        else {
+            return "b";
+        }
+    }
     
     void processAst(ParseTree node)
     {
@@ -140,7 +211,11 @@ class Program
 						case "PROMAL.Const_def":
 							this.constDef(node);
 							break;
-					
+
+                        case "PROMAL.Global_decl":
+                            this.globalVariable(node);
+                            break;
+
 						default:
 							foreach(ref child; node.children) {
 								walkAst(child);

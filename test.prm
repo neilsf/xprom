@@ -1,7 +1,10 @@
 program HelloWorld own export
-const byte MYYY_2 = $00af
-global real HWorld[8]
-const int MYYY_2 = -7662
+
+const ARRAY_LEN = 10
+
+global real HWorld[ARRAY_LEN]
+global int MyInt[10, ARRAY_LEN ,210]
+
 
 ext real _MYHelloReal[5] at $ffd0
 ext asm func word MyExtFunction at 32456
