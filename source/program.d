@@ -1,6 +1,7 @@
 import std.stdio, std.array, std.conv, std.string;
 import pegged.grammar;
 import core.stdc.stdlib;
+import excess;
 
 struct Variable {
     ushort location;
@@ -32,7 +33,7 @@ class Program
     Variable[] external_variables;
     Const[] constants;
     short next_var_loc = 0xc00;
-    
+
     this() {
         this.varlen['b'] = 1;
         this.varlen['w'] = 2;
@@ -62,7 +63,7 @@ class Program
 
         assert(0);
     }
-    
+
     void extDecl(ParseTree node)
     {
     	string decl_type = node.children[0].name;
@@ -73,10 +74,10 @@ class Program
     		this.external_variables ~= v;
     	}
     	else {
-    	
+
     	}
     }
-    
+
     Variable parseVarDecl(ParseTree node)
     {
     	string varname;
@@ -106,7 +107,7 @@ class Program
     {
       this.variables ~= this.parseVarDecl(node);
     }
-    
+
     string getVarSegment()
     {
     	string varsegment = "*=* \"globals\" virtual\n";
@@ -115,20 +116,20 @@ class Program
     		int array_len = variable.array_subscript[0] * variable.array_subscript[1] * variable.array_subscript[2];
     		varsegment ~= "_" ~ variable.name ~": .fill " ~ to!string(varlen * array_len) ~ ",0\n";
     	}
-    	
+
     	foreach(ref variable; this.external_variables) {
     		varsegment ~= ".label _" ~ variable.name ~" = " ~ to!string(variable.location) ~ "\n";
     	}
-    	
+
     	return varsegment;
     }
-    
+
     void processProgram(ParseTree node)
     {
     	auto program_id = node.children[0];
-	    writeln("/* PROGRAM "~program_id.matches[0]~" */");    	
+	    writeln("/* PROGRAM "~program_id.matches[0]~" */");
     }
-    
+
     void constDef(ParseTree node)
     {
 	    float floatval;
@@ -156,16 +157,16 @@ class Program
     		intval = this.parseInt(value);
     		floatval = 0.0;
     	}
-    	
+
     	assertIdExists(id);
     	this.constants ~= Const(id, vartype[0], floatval, intval);
     }
-    
+
     float parseFloat(string strval)
     {
 	    return to!float(strval);
     }
-    
+
     int parseInt(string strval)
     {
 		try {
@@ -182,18 +183,18 @@ class Program
 			writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
 			exit(1);
 		}
-		
+
 			return 0;
     }
-    
+
     void assertIdExists(string id)
     {
     	if(idExists(id)) {
     		writeln("Semantic error: can't redefine '" ~ id ~"'");
 	    	exit(1);
-    	}			
+    	}
     }
-    
+
     bool idExists(string id)
     {
     	foreach(ref elem; this.constants) {
@@ -201,19 +202,19 @@ class Program
     			return true;
     		}
     	}
-    	
+
     	foreach(ref elem; this.variables) {
     		if(id == elem.name) {
     			return true;
     		}
     	}
-    	
+
     	foreach(ref elem; this.external_variables) {
     		if(id == elem.name) {
     			return true;
     		}
     	}
-    	
+
     	return false;
     }
 
@@ -233,11 +234,11 @@ class Program
             return "b";
         }
     }
-    
+
     void processAst(ParseTree node)
     {
         ubyte level = 1;
-        
+
         void walkAst(ParseTree node)
         {
 				  //writeln("  ".replicate(level) ~ "Child name: "~node.name);
@@ -247,7 +248,7 @@ class Program
 						case "PROMAL.Program_decl":
 							this.processProgram(node);
 							break;
-			
+
 						case "PROMAL.Const_def":
 							this.constDef(node);
 							break;
@@ -255,7 +256,7 @@ class Program
             case "PROMAL.Global_decl":
                 this.globalVariable(node);
                 break;
-                
+
             case "PROMAL.Ext_decl":
             	this.extDecl(node);
             	break;
@@ -265,12 +266,12 @@ class Program
 								walkAst(child);
 							}
 						break;
-			
+
 					}
 
 					level -=1;
         }
-        
+
         walkAst(node);
     }
 }
