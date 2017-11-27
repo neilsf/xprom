@@ -27,25 +27,26 @@ class Program
 
     ProgramSettings settings;
 
-    byte[string] varlen;
+    byte[char] varlen;
     Variable[] variables;
+    Variable[] external_variables;
     Const[] constants;
     short next_var_loc = 0xc00;
     
     this() {
-        this.varlen["b"] = 1;
-        this.varlen["w"] = 2;
-        this.varlen["i"] = 3;
-        this.varlen["r"] = 5;
+        this.varlen['b'] = 1;
+        this.varlen['w'] = 2;
+        this.varlen['i'] = 3;
+        this.varlen['r'] = 6;
         this.settings = ProgramSettings(0xc000, 0xcfff, 0x0801, 0x9999);
     }
 
     bool constExists(string id)
     {
-        foreach(ref elem; this.variables) {
-    		if(id == elem.name) {
-    			return true;
-    		}
+        foreach(ref elem; this.constants) {
+		  		if(id == elem.name) {
+		  			return true;
+		  		}
     	}
 
     	return false;
@@ -61,36 +62,71 @@ class Program
 
         assert(0);
     }
+    
+    void extDecl(ParseTree node)
+    {
+    	string decl_type = node.children[0].name;
+    	if(decl_type == "PROMAL.Var_decl") {
+    		Variable v = this.parseVarDecl(node.children[0]);
+    		int location = this.parseInt(node.children[1].matches[0]);
+    		v.location = cast(ushort)location;
+    		this.external_variables ~= v;
+    	}
+    	else {
+    	
+    	}
+    }
+    
+    Variable parseVarDecl(ParseTree node)
+    {
+    	string varname;
+      string vartype;
+      Const constant;
+      ushort uvalue;
+      ushort[3] array_subscript = [1,1,1];
+
+      varname = node.children[1].matches[0];
+      vartype = node.children[0].matches[0];
+
+      for(ubyte i=2; i<=node.children.length-2; i++) {
+        if(this.constExists(node.children[i].matches[0])) {
+          constant = this.getConst(node.children[i].matches[0]);
+          uvalue = cast(ushort)constant.ivalue;
+        }
+        else {
+          uvalue = cast(ushort)this.parseInt(node.children[i].matches[0]);
+        }
+          array_subscript[i-2] = uvalue;
+      }
+
+      return Variable(0, varname, vartype[0], array_subscript);
+    }
 
     void globalVariable(ParseTree node)
     {
-		string varname;
-        string vartype;
-        Const constant;
-        ushort uvalue;
-        ushort[3] array_subscript = [1,1,1];
-
-        varname = node.children[0].matches[0];
-        vartype = node.children[1].matches[0];
-
-        for(ubyte i=2; i<=node.children.length-2; i++) {
-          if(this.constExists(node.children[i].matches[0])) {
-            constant = this.getConst(node.children[i].matches[0]);
-            uvalue = cast(ushort)constant.ivalue;
-          }
-          else {
-            uvalue = cast(ushort)this.parseInt(node.children[i].matches[0]);
-          }
-            array_subscript[i-2] = uvalue;
-        }
-
-        this.variables ~= Variable(0xc000, varname, vartype[0], array_subscript);
+      this.variables ~= this.parseVarDecl(node);
+    }
+    
+    string getVarSegment()
+    {
+    	string varsegment = "*=* \"globals\" virtual\n";
+    	foreach(ref variable; this.variables) {
+    		ubyte varlen = this.varlen[variable.type];
+    		int array_len = variable.array_subscript[0] * variable.array_subscript[1] * variable.array_subscript[2];
+    		varsegment ~= "_" ~ variable.name ~": .fill " ~ to!string(varlen * array_len) ~ ",0\n";
+    	}
+    	
+    	foreach(ref variable; this.external_variables) {
+    		varsegment ~= ".label _" ~ variable.name ~" = " ~ to!string(variable.location) ~ "\n";
+    	}
+    	
+    	return varsegment;
     }
     
     void processProgram(ParseTree node)
     {
     	auto program_id = node.children[0];
-	    writeln("  /* PROGRAM "~program_id.matches[0]~" */");    	
+	    writeln("/* PROGRAM "~program_id.matches[0]~" */");    	
     }
     
     void constDef(ParseTree node)
@@ -123,8 +159,6 @@ class Program
     	
     	assertIdExists(id);
     	this.constants ~= Const(id, vartype[0], floatval, intval);
-        writeln(this.constants);
-    	
     }
     
     float parseFloat(string strval)
@@ -174,6 +208,12 @@ class Program
     		}
     	}
     	
+    	foreach(ref elem; this.external_variables) {
+    		if(id == elem.name) {
+    			return true;
+    		}
+    	}
+    	
     	return false;
     }
 
@@ -212,9 +252,13 @@ class Program
 							this.constDef(node);
 							break;
 
-                        case "PROMAL.Global_decl":
-                            this.globalVariable(node);
-                            break;
+            case "PROMAL.Global_decl":
+                this.globalVariable(node);
+                break;
+                
+            case "PROMAL.Ext_decl":
+            	this.extDecl(node);
+            	break;
 
 						default:
 							foreach(ref child; node.children) {

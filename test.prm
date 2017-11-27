@@ -7,6 +7,8 @@ global int MyInt[10, ARRAY_LEN ,210]
 
 
 ext real _MYHelloReal[5] at $ffd0
+ext byte BACKGROUND_COLOR at $d020
+
 ext asm func word MyExtFunction at 32456
 
 data real MyData = 12.33, 31, "Hello'world 344", 441.3, 9, $af, 5

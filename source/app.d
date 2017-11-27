@@ -20,6 +20,6 @@ void main()
     Program program = new Program;
     program.processAst(ast);
     
-    writeln(program.variables);
+    writeln(program.getVarSegment());
 }
 
