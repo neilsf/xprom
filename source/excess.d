@@ -4,6 +4,7 @@ import std.math;
 import std.conv;
 import std.stdio;
 import std.string;
+import std.array;
 
 ubyte[5] excessConvert(real value) {
 
@@ -47,7 +48,7 @@ ubyte[5] excessConvert(real value) {
     binary_fraction = toBinary(fraction);
     binary_whole = to!string(to!int(whole), 2);
     exponent = to!int(binary_whole.length) + 128;
-    mantissa = rightJustify(binary_whole ~ binary_fraction, 32, 0);
+    mantissa = binary_whole ~ binary_fraction ~ ("0".replicate(32 - (binary_whole.length + binary_fraction.length)));
     mantissa = (is_negative ? '1' : '0') ~ mantissa[1..32];
 
     m4 = mantissa[0..8];
@@ -57,7 +58,6 @@ ubyte[5] excessConvert(real value) {
 
     binary_exponent = to!string(exponent, 2);
 
-    writeln(m1 ~ "," ~ m2 ~ "," ~ m3 ~ "," ~ m4 ~ "," ~ binary_exponent);
     return [to!ubyte(exponent),
         to!ubyte(to!int(m4,2)),
         to!ubyte(to!int(m3,2)),
@@ -65,3 +65,4 @@ ubyte[5] excessConvert(real value) {
         to!ubyte(to!int(m1,2))
     ];
 }
+

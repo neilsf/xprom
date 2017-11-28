@@ -11,7 +11,7 @@ ext byte BACKGROUND_COLOR at $d020
 
 ext asm func word MyExtFunction at 32456
 
-data real MyData = 12.33, 31, "Hello'world 344", 441.3, 9, $af, 5
+data real MyData = 12.33, 31, 441.3, 9, 5.9992, -1223.3
 
 proc ThisIsAProc
 	arg int someArg1

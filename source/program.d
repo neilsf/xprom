@@ -31,8 +31,11 @@ class Program
     byte[char] varlen;
     Variable[] variables;
     Variable[] external_variables;
+    Variable[] program_data;
     Const[] constants;
     short next_var_loc = 0xc00;
+    string program_segment;
+    string data_segment;
 
     this() {
         this.varlen['b'] = 1;
@@ -107,10 +110,17 @@ class Program
     {
       this.variables ~= this.parseVarDecl(node);
     }
-
+    
+    string getDataSegment()
+    {
+    	string ret = "\n*=* \"data\"\n";
+    	ret ~= this.data_segment;
+    	return ret;
+    }
+    
     string getVarSegment()
     {
-    	string varsegment = "*=* \"globals\" virtual\n";
+    	string varsegment = "\n*=* \"globals\" virtual\n";
     	foreach(ref variable; this.variables) {
     		ubyte varlen = this.varlen[variable.type];
     		int array_len = variable.array_subscript[0] * variable.array_subscript[1] * variable.array_subscript[2];
@@ -132,8 +142,8 @@ class Program
 
     void constDef(ParseTree node)
     {
-	    float floatval;
-	    int intval;
+	    	float floatval;
+	    	int intval;
         string vartype;
         string id;
         string value;
@@ -161,6 +171,48 @@ class Program
     	assertIdExists(id);
     	this.constants ~= Const(id, vartype[0], floatval, intval);
     }
+    
+    void dataDef(ParseTree node)
+    {
+    	string vartype = node.children[0].matches[0];
+    	string id = node.children[1].matches[0];
+    	real[] realdata;
+    	int[] intdata;
+    	assertIdExists(id);
+    	ushort dataLen = 0;
+    	for(ubyte i=2; i<=node.children.length-2; i++) {
+    		if(node.children[i].name == "PROMAL.NL") {
+    			continue;
+    		}
+				if(vartype[0] == 'r') {
+						realdata ~= this.parseFloat(node.children[i].children[0].matches[0]);
+				}
+				else {
+						intdata ~= this.parseInt(node.children[i].children[0].matches[0]);
+				}
+				dataLen+=1;
+    	}
+    	
+    	this.program_data ~= Variable(0, id, vartype[0], [dataLen,1,1]);
+    	
+    	this.data_segment ~= "_"~id~": .byte ";
+    	
+    	ubyte[5] data_bytes;
+    	
+    	for(ubyte i=0; i<dataLen; i++) {
+    		switch(vartype[0]) {
+					case 'r':
+						data_bytes = excessConvert(realdata[i]);
+						this.data_segment ~= to!string(data_bytes[0])~","~to!string(data_bytes[1])~","~to!string(data_bytes[2])~","~to!string(data_bytes[3])~","~to!string(data_bytes[4])~",";
+						break;
+						
+					default:
+						{}
+						break;
+				}
+    	}
+    
+    }
 
     float parseFloat(string strval)
     {
@@ -169,19 +221,19 @@ class Program
 
     int parseInt(string strval)
     {
-		try {
-			if(strval[0] == '$') {
-					return to!int(strval[1..$] ,16);
-				}
-				else if(strval[0] == '%') {
-					return to!int(strval[1..$] ,2);
-				}
-				else {
-					return to!int(strval);
-				}
-		} catch (std.conv.ConvException e) {
-			writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
-			exit(1);
+			try {
+				if(strval[0] == '$') {
+						return to!int(strval[1..$] ,16);
+					}
+					else if(strval[0] == '%') {
+						return to!int(strval[1..$] ,2);
+					}
+					else {
+						return to!int(strval);
+					}
+			} catch (std.conv.ConvException e) {
+				writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
+				exit(1);
 		}
 
 			return 0;
@@ -259,6 +311,10 @@ class Program
 
             case "PROMAL.Ext_decl":
             	this.extDecl(node);
+            	break;
+            	
+          	case "PROMAL.Data_def":
+          		this.dataDef(node);
             	break;
 
 						default:
