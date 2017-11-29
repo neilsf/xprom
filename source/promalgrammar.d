@@ -29,13 +29,40 @@ PROMAL:
     For_stmt < "for" WS id WS? "=" WS? Exp WS "to" WS Exp NL Stmt+ "end for" NL
     While_stmt < "while" WS Exp NL Stmt+ "end while" NL
 
-    Exp < Relation (("and" / "or" / "xor") Relation)*
-    Relation < Simplexp (("<" / "<=" / "<>" / ">=" / ">") Simplexp)?
-    Simplexp < "-"? Term (("+" / "-") Term)*
-    Term < Factor (("*" / "/" / "%" / "<<" / ">>") Factor)*
-    Factor <- ("'" Char "'") / String / "true" / "false" / ("not" Factor) / Number / ("#"? Var) / Func_call / ("(" WS? Exp WS? ")")
+    Exp < Relation (Or / And / Xor)*
+    Or < "or" Relation
+    And < "and" Relation
+    Xor < "xor" Relation
+    Relation < Simplexp (Lt / Lte / Neq / Gte / Gt)?
+    Lt < "<" Simplexp
+    Lte < "<=" Simplexp
+    Neq < "<>" Simplexp
+    Gte < ">=" Simplexp
+    Gt < ">" Simplexp
+
+    Simplexp < (Minus / Term) (Plus / Minus)*
+
+    Minus < "-" Term
+    Plus < "+" Term
+
+    Term < Factor (Mult / Div / Mod / Lshift / Rshift)*
+
+    Mult < "*" Factor
+    Div < "/" Factor
+    Mod < "%" Factor
+    Lshift < "<<" Factor
+    Rshift < ">>" Factor
+
+    Factor <- Charlit / String / True / False / Not / Number / ("#"? Var) / Func_call / ("(" WS? Exp WS? ")")
+
+		True < "true"
+		False < "false"
+		Not < "not" Factor
+
     Var < id ("[" Exp "]")?
     Cast < ":<" / ":>" / ":-" / ":+" / ":." / "@<" / "@-" / "@+" / "@."
+
+		Charlit < "'" Char "'"
 
     Keyword <- "end" / "program" / "own" / "export" / "con" / "byte"/ "word" / "int" / "real" / "ext" / "global" / "data" / "proc" / "func" / "begin" / "end" / "asm" / "at" / "arg" / "list" / "if" / "choose" / "while" / "repeat" / "for" / "else" / "return" / "nothing" / "refuge" / "escape" / "break" / "next" / "case" / "else" / "until" / "and" / "or" / "xor" / "true" / "false" / "not" / "call"
     Number <~ Scientific / Floating / Integer / Hexa
@@ -54,7 +81,7 @@ PROMAL:
     Integer    <~ Sign? Unsigned
     Hexa       <~ "$" [0-9a-fA-F]+
     Sign       <- '-' / '+'
-
+    
     Vartype    <- "byte" / "word" / "int" / "real"
 
     WS <~ (space / eol / Comment)*

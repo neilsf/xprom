@@ -195,9 +195,16 @@ class Program
     	
     	this.program_data ~= Variable(0, id, vartype[0], [dataLen,1,1]);
     	
-    	this.data_segment ~= "_"~id~": .byte ";
+    	if(vartype[0] == 'w') {
+      	this.data_segment ~= "_"~id~": .word ";  	
+    	}
+    	else {
+	    	this.data_segment ~= "_"~id~": .byte ";    	
+    	}
+
     	
     	ubyte[5] data_bytes;
+    	ubyte[3] int_bytes;
     	
     	for(ubyte i=0; i<dataLen; i++) {
     		switch(vartype[0]) {
@@ -206,12 +213,260 @@ class Program
 						this.data_segment ~= to!string(data_bytes[0])~","~to!string(data_bytes[1])~","~to!string(data_bytes[2])~","~to!string(data_bytes[3])~","~to!string(data_bytes[4])~",";
 						break;
 						
+					case 'b':
+					case 'w':
+						this.data_segment ~= to!string(intdata[i])~",";
+						break;
+						
+					case 'i':
+						int_bytes = this.intToBin(intdata[i]);
+						this.data_segment ~= to!string(int_bytes[2])~","~to!string(int_bytes[1])~","~to!string(int_bytes[0])~",";
+						break;
+						
 					default:
 						{}
 						break;
 				}
     	}
+    	
+    	this.data_segment.popBack();
+    	this.data_segment~="\n";
     
+    }
+    
+    void subDef(ParseTree node)
+    {
+    	/* Proc */
+    	if(node.children[0].matches[0] == "proc") {
+    		
+    	}
+    	/* Func */
+    	else {
+    	
+    	}
+    }
+    
+    string evalFactor(ParseTree node, ref char return_type)
+    {
+    	string ret_string = "";
+    	ParseTree fact = node.children[0];
+    	switch(fact.name) {
+    		case "PROMAL.Charlit":
+    			ret_string ~= "lda #"~fact.matches[0]~"\n";
+    			ret_string ~= "pha\n";
+    			return_type = 'b';
+	    		break;
+	    		
+    		case "PROMAL.String":
+    			{} // TODO
+    			break;
+    			
+  			case "PROMAL.True":
+  				ret_string ~= "pone\n";
+  				return_type = 'b';
+  				break;
+  				
+  			case "PROMAL.False":
+  				ret_string ~= "pzero\n";
+  				return_type = 'b';
+  				break;
+				
+    		case "PROMAL.Not":
+    			{} // TODO
+    			break;
+    		
+  			case "PROMAL.Number":
+					switch(this.guessTheType(fact.matches[0])){
+						case "b":
+							ret_string ~= "pbyte #"~this.parseInt(fact.matches[0])~"\n";
+							return_type = 'b';
+							break;
+							
+						case "w":
+							ret_string ~= "pword #"~this.parseInt(fact.matches[0])~"\n";
+							return_type = 'w';
+							break;
+							
+						case "i":
+							ret_string ~= "pint #"~this.parseInt(fact.matches[0])~"\n";
+							return_type = 'i';
+							break;
+							
+						case "r":
+							bytes[5] = excessConvert(this.parseFloat(fact.matches[0]));
+							foreach(b; bytes) {
+								ret_string ~= "pbyte #"~to!string(b)~"\n";
+							}
+							return_type = 'r';
+							break;
+					}
+    			break;
+
+				case "PROMAL.Var":
+					
+					break;
+    	
+    	}
+    	return ret_string;
+    }
+        
+    
+    string evalTerm(ParseTree node)
+    {
+    	string ret_string = "";
+    	char return_type;
+    	
+    	foreach(ref factor; node.children) {
+    		final switch(factor.name) {
+    			case "PROMAL.Factor":
+    				ret_string ~= this.evalFactor(factor, return_type);
+	    			break;
+	    			
+	  			case "PROMAL.Mult":
+    			
+	    			break;
+	    			
+	  			case "PROMAL.Div":
+    			
+	    			break;
+	  			
+	  			case "PROMAL.Mod":
+    			
+	    			break;
+	    			
+	  			case "PROMAL.Lshift":
+    			
+	    			break;
+
+	  			case "PROMAL.Rshift":
+    			
+	    			break;
+    		}
+    	}
+    	
+    	return ret_string;
+    }
+    
+    string evalSimplexp(ParseTree node)
+    {
+    	string ret_string = "";
+    	ubyte count = 0;
+    	
+    	foreach(ref term; node.children) {
+    		final switch(term.name) {
+    			case "PROMAL.Term":
+    				ret_string ~= this.evalTerm(term);		
+    				break;
+    				
+  				case "PROMAL.Minus":
+  				
+						if(count == 0) { // Substract from zero
+						
+						}
+						else { // Substract from previous Term
+		    			ret_string ~= this.evalTerm(term.children[0]);
+		    			ret_string ~= ""; // What types to substract?						
+						}
+
+    				break;
+    				
+  				case "PROMAL.Plus":
+		    			ret_string ~= this.evalTerm(term.children[0]);
+		    			ret_string ~= ""; // What types to add?						
+    				break;
+    				
+    		}
+    		
+    		count++;
+    	}
+    	
+    	return ret_string;
+    }
+    
+    string evalExp(ParseTree node)
+    {
+    	string ret_string = "";
+    
+    	foreach(ref relation; node.children) {
+    	
+    		final switch(relation.name) {
+    			case "PROMAL.Relation":
+    				
+    				foreach(ref simplexp; relation.children) {
+    					final switch(simplexp.name) {
+    						case "PROMAL.Simplexp":
+    							ret_string ~= this.evalSimplexp(simplexp);
+  	  						break;
+    						
+    						case "PROMAL.Lt":
+    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
+    							ret_string ~= ""; // What types to compare?
+	    						break;
+	    						
+    						case "PROMAL.Lte":
+    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
+    							ret_string ~= ""; // What types to compare?
+	    						break;
+	    						
+    						case "PROMAL.Neq":
+    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
+    							ret_string ~= ""; // What types to compare?
+	    						break;
+	    						
+    						case "PROMAL.Gt":
+    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
+    							ret_string ~= ""; // What types to compare?
+	    						break;
+	    						
+    						case "PROMAL.Gte":
+    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
+    							ret_string ~= ""; // What types to compare?
+	    						break;
+    					}    				
+    				}
+    				
+    				break;
+    			
+    			case "PROMAL.Or":
+		  			ret_string ~= this.evalExp(relation.children[0]);
+		  			ret_string ~= "orb\n";
+    				break;
+    				
+  				case "PROMAL.And":
+		  			ret_string ~= this.evalExp(relation.children[0]);
+		  			ret_string ~= "andb\n";
+    				break;
+    		
+  				case "PROMAL.Xor":
+		  			ret_string ~= this.evalExp(relation.children[0]);
+		  			ret_string ~= "xorb\n";
+    				break;
+    		
+    		}
+  		}
+  		
+  		return ret_string;
+    }
+    
+    ubyte[3] intToBin(int number)
+    {
+    	ubyte[3] data_bytes;
+    
+			if(number < 0) {
+					number = 16777216 + number;
+				}
+			
+			try {
+				data_bytes[0] = to!ubyte(number >> 16);
+				data_bytes[1] = to!ubyte((number & 65280) >> 8);
+				data_bytes[2] = to!ubyte(number & 255);
+			}
+			catch(Exception e) {
+				writeln("Compile error: number out of range: "~to!string(number));
+				exit(1);
+			}
+			
+			return data_bytes;
     }
 
     float parseFloat(string strval)
@@ -315,6 +570,10 @@ class Program
             	
           	case "PROMAL.Data_def":
           		this.dataDef(node);
+            	break;
+            	
+          	case "PROMAL.Sub_def":
+          		this.subDef(node);
             	break;
 
 						default:

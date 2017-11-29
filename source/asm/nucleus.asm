@@ -522,3 +522,41 @@ enterLoop:
 end:	
 		pha
 }
+
+/* Perform OR on top 2 bytes of stack */
+.pseudocommand orb {
+		pla
+		sta reserved1
+		pla
+		ora reserved1
+		pha 
+}
+
+/* Perform AND on top 2 bytes of stack */
+.pseudocommand andb {
+		pla
+		sta reserved1
+		pla
+		and reserved1
+		pha 
+}
+
+/* Perform XOR on top 2 bytes of stack */
+.pseudocommand xorb {
+		pla
+		sta reserved1
+		pla
+		eor reserved1
+		pha 
+}
+
+/* Invert true/false value on top byte of stack */
+.pseudocommand notbool {
+		pla
+		beq skip
+		pzero
+		jmp end
+skip:
+		pone			
+end:
+}
