@@ -1,9 +1,10 @@
 module promalgrammar;
 
 import pegged.grammar;
-import program;
+import std.stdio;
+import std.file;
 
-mixin(grammar(`
+string grammarcode = grammar(`
 PROMAL:
     Program < Program_decl (Const_def / Global_decl / Ext_decl / Data_def / Sub_def)* "begin" NL Stmt+ "end" NL WS?
 
@@ -91,4 +92,6 @@ PROMAL:
 
     NL <- ('\r' / '\n' / '\r\n')+
     Spacing <- :(' ' / '\t')*
-`));
+`);
+
+

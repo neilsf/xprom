@@ -1,6 +1,6 @@
 import std.stdio, std.file, std.array;
 import program;
-import promalgrammar;
+import promalg;
 
 void main()
 {
@@ -18,8 +18,8 @@ void main()
     writeln("Success? " ~ (ast.successful == true ? "Yes" : "No"));
 
     Program program = new Program;
-    program.processAst(ast);
-		writeln(program.getDataSegment());
+    program.processAst(ast);		writeln(program.getDataSegment());
     writeln(program.getVarSegment());
+
 }
 

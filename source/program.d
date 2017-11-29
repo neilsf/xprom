@@ -250,7 +250,7 @@ class Program
     {
     	string ret_string = "";
     	ParseTree fact = node.children[0];
-    	switch(fact.name) {
+    	final switch(fact.name) {
     		case "PROMAL.Charlit":
     			ret_string ~= "lda #"~fact.matches[0]~"\n";
     			ret_string ~= "pha\n";
@@ -276,24 +276,24 @@ class Program
     			break;
     		
   			case "PROMAL.Number":
-					switch(this.guessTheType(fact.matches[0])){
-						case "b":
-							ret_string ~= "pbyte #"~this.parseInt(fact.matches[0])~"\n";
+					final switch(this.guessTheType(fact.matches[0])){
+			   			case "b":
+							ret_string ~= "pbyte #"~to!string(this.parseInt(fact.matches[0]))~"\n";
 							return_type = 'b';
 							break;
 							
 						case "w":
-							ret_string ~= "pword #"~this.parseInt(fact.matches[0])~"\n";
+							ret_string ~= "pword #"~to!string(this.parseInt(fact.matches[0]))~"\n";
 							return_type = 'w';
 							break;
 							
 						case "i":
-							ret_string ~= "pint #"~this.parseInt(fact.matches[0])~"\n";
+							ret_string ~= "pint #"~to!string(this.parseInt(fact.matches[0]))~"\n";
 							return_type = 'i';
 							break;
 							
 						case "r":
-							bytes[5] = excessConvert(this.parseFloat(fact.matches[0]));
+							ubyte[5] bytes = excessConvert(this.parseFloat(fact.matches[0]));
 							foreach(b; bytes) {
 								ret_string ~= "pbyte #"~to!string(b)~"\n";
 							}
@@ -303,7 +303,13 @@ class Program
     			break;
 
 				case "PROMAL.Var":
-					
+					if(this.constExists(fact.matches[0])) {
+
+
+                    }
+                    else if(this.idExists(fact.matches[0])) {
+                        Variable variable = this.findVariable(fact.matches[0]);
+                    }
 					break;
     	
     	}
@@ -476,22 +482,22 @@ class Program
 
     int parseInt(string strval)
     {
-			try {
-				if(strval[0] == '$') {
-						return to!int(strval[1..$] ,16);
-					}
-					else if(strval[0] == '%') {
-						return to!int(strval[1..$] ,2);
-					}
-					else {
-						return to!int(strval);
-					}
-			} catch (std.conv.ConvException e) {
-				writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
-				exit(1);
-		}
+	  try {
+		  if(strval[0] == '$') {
+				  return to!int(strval[1..$] ,16);
+			  }
+			  else if(strval[0] == '%') {
+				  return to!int(strval[1..$] ,2);
+			  }
+			  else {
+				  return to!int(strval);
+			  }
+	  } catch (std.conv.ConvException e) {
+		  writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
+		  exit(1);
+	  }
 
-			return 0;
+	  return 0;
     }
 
     void assertIdExists(string id)
@@ -500,6 +506,23 @@ class Program
     		writeln("Semantic error: can't redefine '" ~ id ~"'");
 	    	exit(1);
     	}
+    }
+
+    Variable findVariable(string id)
+    {
+        foreach(ref elem; this.variables) {
+    		if(id == elem.name) {
+    			return elem;
+    		}
+    	}
+
+    	foreach(ref elem; this.external_variables) {
+    		if(id == elem.name) {
+    			return elem;
+    		}
+    	}
+
+        assert(0);
     }
 
     bool idExists(string id)
