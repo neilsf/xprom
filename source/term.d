@@ -22,7 +22,7 @@ class Term:Node
     			case "PROMAL.Factor":
     			    auto fact = new Factor(factor, this.program);
     				ret_string ~= to!string(fact);
-    				this.exp_type = fact.exp_type;
+    				this.expr_type = fact.exp_type;
 	    			break;
 	    			
 	  			case "PROMAL.Mult":

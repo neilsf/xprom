@@ -8,6 +8,11 @@ import excess;
 
 class Factor: Node
 {
+    string as_byte;
+    string as_word;
+    string as_int;
+    string as_real;
+    
     char expr_type;
     char force_type;
 
@@ -16,39 +21,57 @@ class Factor: Node
         this.force_type = force_type;
         super(node, program);
     }
-    
+ 
     string eval()
     {
         string ret_string = "";
     	ParseTree fact = this.node.children[0];
     	final switch(fact.name) {
     		case "PROMAL.Charlit":
-    			ret_string ~= "lda #"~fact.matches[0]~"\n";
-    			ret_string ~= "pha\n";
+                ubyte val = fact.matches[0][1];
+                this.as_byte = "lda #"~to!string(val)~"\npha\n";
+                this.as_word = this.as_byte ~ "phzero\n";
+                this.as_int = this.as_word ~ "phzero\n";
 
-    			if(this.force_type == 'w') {
-    			    ret_string ~= "phzero\n";
-    			}
-    			else if(this.force_type == 'i') {
-    			    ret_string ~= "phzero\n";
-    			    ret_string ~= "phzero\n";
-    			}
-    			
-    			this.expr_type = 'b';
-	    		break;
+                ubyte[5] bytes = excessConvert(val);
+                this.as_real = "";
+                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                this.expr_type = 'b';
+                break;
 	    		
     		case "PROMAL.String":
     			{} // TODO
     			break;
     			
   			case "PROMAL.True":
-  				ret_string ~= "pone\n";
-  				this.expr_type = 'b';
+  				this.as_byte =  "pone\n";
+                this.as_word = this.as_byte ~ "phzero\n";
+                this.as_int = this.as_word ~ "phzero\n";
+  				ubyte[5] bytes = excessConvert(1.0);
+                this.as_real = "";
+                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                this.expr_type = 'b';
   				break;
   				
   			case "PROMAL.False":
-  				ret_string ~= "pzero\n";
-  				this.expr_type = 'b';
+  				this.as_byte =  "pzero\n";
+                this.as_word = this.as_byte ~ "phzero\n";
+                this.as_int = this.as_word ~ "phzero\n";
+  				ubyte[5] bytes = excessConvert(0.0);
+                this.as_real = "";
+                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
+                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
   				break;
 				
     		case "PROMAL.Not":
@@ -56,14 +79,18 @@ class Factor: Node
     			break;
     		
   			case "PROMAL.Number":
-				final switch(this.program.guessTheType(fact.matches[0])){
+                string lit_type = this.program.guessTheType(fact.matches[0]);
+				final switch(lit_type) {
 		   			case "b":
-						ret_string ~= "pbyte #"~to!string(this.program.parseInt(fact.matches[0]))~"\n";
+						this.as_byte = "pbyte #"~to!string(this.program.parseInt(fact.matches[0]))~"\n";
+                        this.as_word = this.as_byte ~ "phzero\n";
+                        this.as_int = this.as_word ~ "phzero\n";
 						this.expr_type = 'b';
 						break;
 						
 					case "w":
-						ret_string ~= "pword #"~to!string(this.program.parseInt(fact.matches[0]))~"\n";
+						this.as_word = "pword #"~to!string(this.program.parseInt(fact.matches[0]))~"\n";
+                        this.as_int = this.as_word ~ "phzero\n";
 						this.expr_type = 'w';
 						break;
 						
@@ -75,11 +102,21 @@ class Factor: Node
 					case "r":
 						ubyte[5] bytes = excessConvert(this.program.parseFloat(fact.matches[0]));
 						foreach(b; bytes) {
-							ret_string ~= "pbyte #"~to!string(b)~"\n";
+							this.as_real ~= "pbyte #"~to!string(b)~"\n";
 						}
 						this.expr_type = 'r';
 						break;
 					}
+
+                if(lit_type == "b" || lit_type == "w" || lit_type == "i") {
+                    ubyte[5] bytes = excessConvert(to!real(this.program.parseInt(fact.matches[0])));
+                    this.as_real = "";
+                    this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
+                    this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
+                    this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
+                    this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
+                    this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                }
     			break;
 
 				case "PROMAL.Var":
