@@ -2,6 +2,7 @@ import std.stdio, std.array, std.conv, std.string;
 import pegged.grammar;
 import core.stdc.stdlib;
 import excess;
+import expression;
 
 struct Variable {
     ushort location;
@@ -245,215 +246,7 @@ class Program
     	
     	}
     }
-    
-    string evalFactor(ParseTree node, ref char return_type)
-    {
-    	string ret_string = "";
-    	ParseTree fact = node.children[0];
-    	final switch(fact.name) {
-    		case "PROMAL.Charlit":
-    			ret_string ~= "lda #"~fact.matches[0]~"\n";
-    			ret_string ~= "pha\n";
-    			return_type = 'b';
-	    		break;
-	    		
-    		case "PROMAL.String":
-    			{} // TODO
-    			break;
-    			
-  			case "PROMAL.True":
-  				ret_string ~= "pone\n";
-  				return_type = 'b';
-  				break;
-  				
-  			case "PROMAL.False":
-  				ret_string ~= "pzero\n";
-  				return_type = 'b';
-  				break;
-				
-    		case "PROMAL.Not":
-    			{} // TODO
-    			break;
-    		
-  			case "PROMAL.Number":
-					final switch(this.guessTheType(fact.matches[0])){
-			   			case "b":
-							ret_string ~= "pbyte #"~to!string(this.parseInt(fact.matches[0]))~"\n";
-							return_type = 'b';
-							break;
-							
-						case "w":
-							ret_string ~= "pword #"~to!string(this.parseInt(fact.matches[0]))~"\n";
-							return_type = 'w';
-							break;
-							
-						case "i":
-							ret_string ~= "pint #"~to!string(this.parseInt(fact.matches[0]))~"\n";
-							return_type = 'i';
-							break;
-							
-						case "r":
-							ubyte[5] bytes = excessConvert(this.parseFloat(fact.matches[0]));
-							foreach(b; bytes) {
-								ret_string ~= "pbyte #"~to!string(b)~"\n";
-							}
-							return_type = 'r';
-							break;
-					}
-    			break;
-
-				case "PROMAL.Var":
-					if(this.constExists(fact.matches[0])) {
-
-
-                    }
-                    else if(this.idExists(fact.matches[0])) {
-                        Variable variable = this.findVariable(fact.matches[0]);
-                    }
-					break;
-    	
-    	}
-    	return ret_string;
-    }
-        
-    
-    string evalTerm(ParseTree node)
-    {
-    	string ret_string = "";
-    	char return_type;
-    	
-    	foreach(ref factor; node.children) {
-    		final switch(factor.name) {
-    			case "PROMAL.Factor":
-    				ret_string ~= this.evalFactor(factor, return_type);
-	    			break;
-	    			
-	  			case "PROMAL.Mult":
-    			
-	    			break;
-	    			
-	  			case "PROMAL.Div":
-    			
-	    			break;
-	  			
-	  			case "PROMAL.Mod":
-    			
-	    			break;
-	    			
-	  			case "PROMAL.Lshift":
-    			
-	    			break;
-
-	  			case "PROMAL.Rshift":
-    			
-	    			break;
-    		}
-    	}
-    	
-    	return ret_string;
-    }
-    
-    string evalSimplexp(ParseTree node)
-    {
-    	string ret_string = "";
-    	ubyte count = 0;
-    	
-    	foreach(ref term; node.children) {
-    		final switch(term.name) {
-    			case "PROMAL.Term":
-    				ret_string ~= this.evalTerm(term);		
-    				break;
-    				
-  				case "PROMAL.Minus":
-  				
-						if(count == 0) { // Substract from zero
-						
-						}
-						else { // Substract from previous Term
-		    			ret_string ~= this.evalTerm(term.children[0]);
-		    			ret_string ~= ""; // What types to substract?						
-						}
-
-    				break;
-    				
-  				case "PROMAL.Plus":
-		    			ret_string ~= this.evalTerm(term.children[0]);
-		    			ret_string ~= ""; // What types to add?						
-    				break;
-    				
-    		}
-    		
-    		count++;
-    	}
-    	
-    	return ret_string;
-    }
-    
-    string evalExp(ParseTree node)
-    {
-    	string ret_string = "";
-    
-    	foreach(ref relation; node.children) {
-    	
-    		final switch(relation.name) {
-    			case "PROMAL.Relation":
-    				
-    				foreach(ref simplexp; relation.children) {
-    					final switch(simplexp.name) {
-    						case "PROMAL.Simplexp":
-    							ret_string ~= this.evalSimplexp(simplexp);
-  	  						break;
-    						
-    						case "PROMAL.Lt":
-    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
-    							ret_string ~= ""; // What types to compare?
-	    						break;
-	    						
-    						case "PROMAL.Lte":
-    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
-    							ret_string ~= ""; // What types to compare?
-	    						break;
-	    						
-    						case "PROMAL.Neq":
-    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
-    							ret_string ~= ""; // What types to compare?
-	    						break;
-	    						
-    						case "PROMAL.Gt":
-    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
-    							ret_string ~= ""; // What types to compare?
-	    						break;
-	    						
-    						case "PROMAL.Gte":
-    							ret_string ~= this.evalSimplexp(simplexp.children[0]);
-    							ret_string ~= ""; // What types to compare?
-	    						break;
-    					}    				
-    				}
-    				
-    				break;
-    			
-    			case "PROMAL.Or":
-		  			ret_string ~= this.evalExp(relation.children[0]);
-		  			ret_string ~= "orb\n";
-    				break;
-    				
-  				case "PROMAL.And":
-		  			ret_string ~= this.evalExp(relation.children[0]);
-		  			ret_string ~= "andb\n";
-    				break;
-    		
-  				case "PROMAL.Xor":
-		  			ret_string ~= this.evalExp(relation.children[0]);
-		  			ret_string ~= "xorb\n";
-    				break;
-    		
-    		}
-  		}
-  		
-  		return ret_string;
-    }
-    
+  
     ubyte[3] intToBin(int number)
     {
     	ubyte[3] data_bytes;
@@ -565,49 +358,56 @@ class Program
         }
     }
 
+
+
     void processAst(ParseTree node)
     {
         ubyte level = 1;
 
         void walkAst(ParseTree node)
         {
-				  //writeln("  ".replicate(level) ~ "Child name: "~node.name);
-				  level +=1;
+            //writeln("  ".replicate(level) ~ "Child name: "~node.name);
+            level +=1;
 
-					switch(node.name) {
-						case "PROMAL.Program_decl":
-							this.processProgram(node);
-							break;
+            switch(node.name) {
+                    case "PROMAL.Program_decl":
+                        this.processProgram(node);
+                        break;
 
-						case "PROMAL.Const_def":
-							this.constDef(node);
-							break;
+                    case "PROMAL.Const_def":
+                        this.constDef(node);
+                        break;
 
-            case "PROMAL.Global_decl":
-                this.globalVariable(node);
-                break;
+                    case "PROMAL.Global_decl":
+                        this.globalVariable(node);
+                        break;
 
-            case "PROMAL.Ext_decl":
-            	this.extDecl(node);
-            	break;
-            	
-          	case "PROMAL.Data_def":
-          		this.dataDef(node);
-            	break;
-            	
-          	case "PROMAL.Sub_def":
-          		this.subDef(node);
-            	break;
+                    case "PROMAL.Ext_decl":
+                        this.extDecl(node);
+                        break;
 
-						default:
-							foreach(ref child; node.children) {
-								walkAst(child);
-							}
-						break;
+                    case "PROMAL.Data_def":
+                        this.dataDef(node);
+                        break;
 
-					}
+                    case "PROMAL.Sub_def":
+                        this.subDef(node);
+                        break;
 
-					level -=1;
+                    case "PROMAL.Exp":
+                        auto exp = new Expression(node, this);
+                        writeln(exp);
+                        break;
+
+                    default:
+                        foreach(ref child; node.children) {
+                            walkAst(child);
+                        }
+                    break;
+
+            }
+
+            level -=1;
         }
 
         walkAst(node);

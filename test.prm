@@ -17,5 +17,5 @@ data byte smalls = $fe, $fd, $02, 128, 99
 data int Loooongs = -45700, 2000000, 3
 
 begin
-    a = 5 * (6 + bhhee) and 192 or #b > 4
+    a = 5 * (6 + bhhee) and 192 or #b > true
 end
