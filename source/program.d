@@ -37,6 +37,8 @@ class Program
     short next_var_loc = 0xc00;
     string program_segment;
     string data_segment;
+    
+    char last_type;
 
     this() {
         this.varlen['b'] = 1;
@@ -84,32 +86,32 @@ class Program
 
     Variable parseVarDecl(ParseTree node)
     {
-    	string varname;
-      string vartype;
-      Const constant;
-      ushort uvalue;
-      ushort[3] array_subscript = [1,1,1];
+        string varname;
+        string vartype;
+        Const constant;
+        ushort uvalue;
+        ushort[3] array_subscript = [1,1,1];
 
-      varname = node.children[1].matches[0];
-      vartype = node.children[0].matches[0];
+        varname = node.children[1].matches[0];
+        vartype = node.children[0].matches[0];
 
-      for(ubyte i=2; i<=node.children.length-2; i++) {
-        if(this.constExists(node.children[i].matches[0])) {
-          constant = this.getConst(node.children[i].matches[0]);
-          uvalue = cast(ushort)constant.ivalue;
+        for(ubyte i=2; i<=node.children.length-2; i++) {
+            if(this.constExists(node.children[i].matches[0])) {
+                constant = this.getConst(node.children[i].matches[0]);
+                uvalue = cast(ushort)constant.ivalue;
+            }
+            else {
+                uvalue = cast(ushort)this.parseInt(node.children[i].matches[0]);
+            }
+            array_subscript[i-2] = uvalue;
         }
-        else {
-          uvalue = cast(ushort)this.parseInt(node.children[i].matches[0]);
-        }
-          array_subscript[i-2] = uvalue;
-      }
 
-      return Variable(0, varname, vartype[0], array_subscript);
+        return Variable(0, varname, vartype[0], array_subscript);
     }
 
     void globalVariable(ParseTree node)
     {
-      this.variables ~= this.parseVarDecl(node);
+        this.variables ~= this.parseVarDecl(node);
     }
     
     string getDataSegment()
@@ -261,8 +263,7 @@ class Program
 				data_bytes[2] = to!ubyte(number & 255);
 			}
 			catch(Exception e) {
-				writeln("Compile error: number out of range: "~to!string(number));
-				exit(1);
+				this.error("Compile error: number out of range: "~to!string(number));
 			}
 			
 			return data_bytes;
@@ -286,8 +287,7 @@ class Program
 				  return to!int(strval);
 			  }
 	  } catch (std.conv.ConvException e) {
-		  writeln("Syntax error: '" ~ strval ~"' is not a valid integer literal");
-		  exit(1);
+		  this.error("Syntax error: '" ~ strval ~"' is not a valid integer literal");
 	  }
 
 	  return 0;
@@ -296,8 +296,7 @@ class Program
     void assertIdExists(string id)
     {
     	if(idExists(id)) {
-    		writeln("Semantic error: can't redefine '" ~ id ~"'");
-	    	exit(1);
+    		this.error("Semantic error: can't redefine '" ~ id ~"'");
     	}
     }
 
@@ -358,7 +357,11 @@ class Program
         }
     }
 
-
+    void error(string error_message)
+    {
+        writeln(error_message);
+        exit(1);
+    }
 
     void processAst(ParseTree node)
     {

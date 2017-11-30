@@ -70,6 +70,20 @@
 	}
 }
 
+/* Push real var on stack *
+.pseudocommand prvar arg{
+		lda arg
+		pha
+		lda arg.getValue()+1
+		pha
+		lda arg.getValue()+2
+		pha
+		lda arg.getValue()+3
+		pha
+		lda arg.getValue()+4
+		pha
+}
+
 /* Push address on stack */
 .pseudocommand paddr arg {
 	lda #<arg.getValue()

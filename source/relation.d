@@ -18,11 +18,15 @@ class Relation: Node
 				case "PROMAL.Simplexp":
 				    auto se = new Simplexp(simplexp_node, this.program);
 					ret_string ~= to!string(se);
+					this.program.last_type = se.expr_type;
 				break;
 				
 				case "PROMAL.Lt":
+					char ltype = this.program.last_type;
                     auto se = new Simplexp(simplexp_node.children[0], this.program);
 					ret_string ~= to!string(se);
+					char rtype = se.expr_type;
+
 					ret_string ~= ""; // What types to compare?
 					break;
 					

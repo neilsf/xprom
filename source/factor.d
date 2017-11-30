@@ -6,11 +6,16 @@ import program;
 import std.conv;
 import excess;
 
-class Factor:Node
+class Factor: Node
 {
     char expr_type;
+    char force_type;
 
-    this(ParseTree node, Program program) { super(node, program); }
+    this(ParseTree node, Program program, char force_type)
+    {
+        this.force_type = force_type;
+        super(node, program);
+    }
     
     string eval()
     {
@@ -20,6 +25,15 @@ class Factor:Node
     		case "PROMAL.Charlit":
     			ret_string ~= "lda #"~fact.matches[0]~"\n";
     			ret_string ~= "pha\n";
+
+    			if(this.force_type == 'w') {
+    			    ret_string ~= "phzero\n";
+    			}
+    			else if(this.force_type == 'i') {
+    			    ret_string ~= "phzero\n";
+    			    ret_string ~= "phzero\n";
+    			}
+    			
     			this.expr_type = 'b';
 	    		break;
 	    		
@@ -71,10 +85,23 @@ class Factor:Node
 				case "PROMAL.Var":
 					if(this.program.constExists(fact.matches[0])) {
 
-
                     }
                     else if(this.program.idExists(fact.matches[0])) {
                         Variable variable = this.program.findVariable(fact.matches[0]);
+                        final switch(variable.type) {
+                            case 'b':
+                                ret_string~="pbyte _"~variable.name~"\n";
+                                break;
+                            case 'w':
+                                ret_string~="pword _"~variable.name~"\n";
+                                break;
+                            case 'i':
+                                ret_string~="pint _"~variable.name~"\n";
+                                break;
+                            case 'r':
+                                ret_string~="prvar _"~variable.name~"\n";
+                                break;
+                        }
                     }
 					break;
     	

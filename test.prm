@@ -3,10 +3,9 @@ program HelloWorld own export
 const ARRAY_LEN = 10
 
 global real HWorld[ARRAY_LEN]
+global real b
 global int MyInt[10, ARRAY_LEN ,210]
 
-
-ext real _MYHelloReal[5] at $ffd0
 ext byte BACKGROUND_COLOR at $d020
 
 ext asm func word MyExtFunction at 32456
@@ -17,5 +16,5 @@ data byte smalls = $fe, $fd, $02, 128, 99
 data int Loooongs = -45700, 2000000, 3
 
 begin
-    a = 5 * (6 + bhhee) and 192 or #b > true
+    a = 5 * (6 + bhhee) and 192 or b > true
 end

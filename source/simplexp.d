@@ -8,11 +8,16 @@ import std.conv;
 import std.stdio;
 import core.stdc.stdlib;
 
-class Simplexp:Node
+class Simplexp: Node
 {
     char expr_type;
+    char force_type;
 
-    this(ParseTree node, Program program) { super(node, program); }
+    this(ParseTree node, Program program, char force_type)
+    {
+        this.force_type = force_type;
+        super(node, program);
+    }
     
     string eval()
     {
