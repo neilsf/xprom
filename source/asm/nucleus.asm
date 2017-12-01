@@ -1,8 +1,15 @@
+.var reserved0	= $fb
 .var reserved1	= $fc
 .var reserved2	= $fd
 .var reserved3	= $fe
 .var reserved4	= $ff
 .var stack = $0100
+
+.var FAC = $61
+.var MOVFM = $bba2;
+.var MOVMF = $bbd4;
+.var FACINX = $b1aa
+.var GIVAYF = $b391
 
 /* Push a zero on the stack */
 .pseudocommand pzero {
@@ -70,7 +77,7 @@
 	}
 }
 
-/* Push real var on stack *
+/* Push real var on stack */
 .pseudocommand prvar arg{
 		lda arg
 		pha
@@ -573,4 +580,57 @@ end:
 skip:
 		pone			
 end:
+}
+
+.pseudocommand phfac {
+    ldx #$fb
+    ldy #$00
+    jsr MOVMF
+    lda reserved0
+    pha
+    lda reserved1
+    pha
+    lda reserved2
+    pha
+    lda reserved3
+    pha
+    lda reserved4
+    pha
+}
+
+.pseudocommand plfac {
+    pla
+    sta reserved4
+    pla
+    sta reserved3
+    pla
+    sta reserved2
+    pla
+    sta reserved1
+    pla
+    sta reserved0
+    lda #$fb
+    ldy #$00
+    jsr MOVFM
+}
+
+.pseudocommand byte2real {
+    pla
+    tay
+    lda #$00
+    jsr GIVAYF
+    phfac
+}
+
+.pseudocommand word2real {
+    lda #$80
+    sta reserved1
+    pla
+    cmp reserved1
+    
+        
+}
+
+.pseudocommand int2real {
+
 }

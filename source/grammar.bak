@@ -56,9 +56,9 @@ PROMAL:
 
     Factor <- Charlit / String / True / False / Not / Number / ("#"? Var) / Func_call / ("(" WS? Exp WS? ")")
 
-		True < "true"
-		False < "false"
-		Not < "not" Factor
+	True < "true"
+	False < "false"
+	Not < "not" Factor
 
     Var < id ("[" Exp "]")?
     Cast < ":<" / ":>" / ":-" / ":+" / ":." / "@<" / "@-" / "@+" / "@."
