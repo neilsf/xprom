@@ -5,6 +5,7 @@ import node;
 import program;
 import std.conv;
 import excess;
+import std.stdio;
 
 class Factor: Node
 {
@@ -25,7 +26,7 @@ class Factor: Node
     {
         string ret_string = "";
     	ParseTree fact = this.node.children[0];
-    	final switch(fact.name) {
+        final switch(fact.name) {
     		case "PROMAL.Charlit":
                 ubyte val = fact.matches[0][1];
                 this.as_byte = "lda #"~to!string(val)~"\npha\n";
@@ -95,7 +96,7 @@ class Factor: Node
 			case "PROMAL.Var":
 				if(this.program.constExists(fact.matches[0])) {
                     Const con = this.program.getConst(fact.matches[0]);
-                    this.evalNumber(con.type == 'r' ? con.fvalue : con.ivalue, con.type);
+                    this.evalNumber(con.type == 'r' ? to!string(con.fvalue) : to!string(con.ivalue)         , to!string(con.type));
                 }
                 else if(this.program.idExists(fact.matches[0])) {
                     Variable variable = this.program.findVariable(fact.matches[0]);
@@ -104,10 +105,7 @@ class Factor: Node
                             this.as_byte ="pbyte _"~variable.name~"\n";
                             this.as_word = this.as_byte ~ "phzero\n";
                             this.as_int = this.as_word ~ "phzero\n";
-                            this.as_real = "ldy  _"~variable.name~"\n";
-                            this.as_real ~="lda  #$00\n";
-                            this.as_real ~="jsr GIVAYF\n";
-                            this.as_real ~="phfac\n";
+                            this.as_real = "byte2real\n";
                             this.expr_type = 'b';
                             break;
                         case 'w':
@@ -129,7 +127,10 @@ class Factor: Node
                     }
                 }
 				break;
-    	
+
+            case "PROMAL.Exp":
+                // TODO recursive evaluate          
+                break;
     	}
     	return ret_string;
     }

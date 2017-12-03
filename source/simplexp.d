@@ -13,9 +13,8 @@ class Simplexp: Node
     char expr_type;
     char force_type;
 
-    this(ParseTree node, Program program, char force_type)
+    this(ParseTree node, Program program)
     {
-        this.force_type = force_type;
         super(node, program);
     }
     

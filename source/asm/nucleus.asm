@@ -6,10 +6,11 @@
 .var stack = $0100
 
 .var FAC = $61
-.var MOVFM = $bba2;
-.var MOVMF = $bbd4;
+.var MOVFM = $bba2
+.var MOVMF = $bbd4
 .var FACINX = $b1aa
 .var GIVAYF = $b391
+.var QINT = $bc9b
 
 /* Push a zero on the stack */
 .pseudocommand pzero {
@@ -617,20 +618,60 @@ end:
 .pseudocommand byte2real {
     pla
     tay
-    lda #$00
-    jsr GIVAYF
+    jsr $b3a2
     phfac
 }
 
 .pseudocommand word2real {
-    lda #$80
-    sta reserved1
     pla
-    cmp reserved1
-    
-        
+    tax
+    pla
+    ldy #$00
+    sec
+    jsr $af87
+    jsr $af7e
+    phfac
 }
 
 .pseudocommand int2real {
+	pla
+	sta $62
+	pla
+	sta $63
+	pla
+	sta $64
+	lda #$00
+	sta $65
+	sta $66
+	sta $70
+	lda #$98
+	sta $61
+	clc
+	lda $62
+	bmi !+
+	sec
+!:	jsr $b8d2
+	phfac
+}
+
+.pseudocommand real2byte {
+	plfac
+	ldy #reserved0
+	lda #$00
+	jsr FACINX
+	lda reserved0
+	pha
+}
+
+.pseudocommand real2word {
+	plfac
+	jsr QINT
+	lda $65
+	pha
+	lda $64
+	pha
+}
+
+.pseudocommand real2int {
 
 }
