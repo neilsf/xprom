@@ -105,13 +105,14 @@ class Factor: Node
                             this.as_byte ="pbyte _"~variable.name~"\n";
                             this.as_word = this.as_byte ~ "phzero\n";
                             this.as_int = this.as_word ~ "phzero\n";
-                            this.as_real = "byte2real\n";
+                            this.as_real = this.as_byte ~ "byte2real\n";
                             this.expr_type = 'b';
                             break;
                         case 'w':
                             this.as_byte ="pbyte _"~variable.name~"\n";
                             this.as_word ="pword _"~variable.name~"\n";
                             this.as_int = this.as_word ~ "phzero\n";
+                            this.as_real = "word2real\n";
                             this.expr_type = 'w';
                             break;
                         case 'i':
