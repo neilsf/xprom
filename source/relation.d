@@ -8,6 +8,8 @@ import std.conv;
 
 class Relation: Node
 {
+    char expr_type = 'b';
+    
     this(ParseTree node, Program program) { super(node, program); }
 
     string eval()

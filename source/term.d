@@ -17,8 +17,6 @@ class Term: Node
     string as_real = "";
 
     this(ParseTree node, Program program) { super(node, program); }
-
-    string type_precedence = "bwir";    
     
     string eval()
     {
@@ -72,6 +70,16 @@ class Term: Node
             case 'b':
                 this.as_word = this.as_byte ~ "pla\n";
                 this.as_int = this.as_byte ~ "pla\n";
+                this.as_real = this.as_byte ~ "byte2real\n";
+            break;
+
+            case 'w':
+                this.as_int = this.as_byte ~ "pla\n";
+                this.as_real = this.as_byte ~ "word2real\n";
+            break;
+
+            case 'i':
+                this.as_real = this.as_byte ~ "int2real\n";
             break;
 
         }
@@ -85,12 +93,7 @@ class Term: Node
                     
         if(factor_index == 1) {
 
-            if(type_precedence.indexOf(fact.expr_type) >= type_precedence.indexOf(ffact.expr_type)) {
-                result_type = fact.expr_type;
-            }
-            else {
-                result_type = ffact.expr_type;
-            }
+            result_type = this.getHigherType(fact.expr_type, ffact.expr_type);
 
             final switch(result_type) {
                 case 'b':

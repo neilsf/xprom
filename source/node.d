@@ -14,6 +14,8 @@ abstract class Node: NodeInterface
     ParseTree node;
     string asmcode;
 
+    string type_precedence = "bwir"; 
+
     this(ParseTree node, Program program)
     {
         this.node = node;
@@ -25,7 +27,16 @@ abstract class Node: NodeInterface
     {
 	    this.asmcode = this.eval();
     }   	
-    
+
+    char getHigherType(char type1, char type2)
+    {
+        if(this.type_precedence.indexOf(type1) >= this.type_precedence.indexOf(type2)) {
+            return type1;
+        }
+        else {
+            return type2;
+        }
+    }    
     
     override string toString()
     {

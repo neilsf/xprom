@@ -11,8 +11,12 @@ import core.stdc.stdlib;
 class Simplexp: Node
 {
     char expr_type;
-    char force_type;
 
+    string as_byte = "";
+    string as_int = "";
+    string as_word = "";
+    string as_real = "";
+        
     this(ParseTree node, Program program)
     {
         super(node, program);
@@ -22,31 +26,50 @@ class Simplexp: Node
     {
         string ret_string = "";
     	ubyte count = 0;
+
+        if(this.node.children[0].name == "PROMAL.Term") {
+            auto term0 = new Term(this.node.children[0], this.program);
+            term0.eval();            
+            this.as_byte = term0.as_byte;
+            this.as_word = term0.as_word;
+            this.as_int = term0.as_int;
+            this.as_real = term0.as_real;
+            this.expr_type = term0.expr_type;
+        }
+        else if(this.node.children[0].name == "PROMAL.Minus") {
+            auto term0 = new Term(this.node.children[0].children[0], this.program);
+            term0.eval();      
+            this.as_byte = term0.as_byte ~= "negbyte\n";
+            this.as_word = term0.as_word ~= "negword\n";
+            this.as_int = term0.as_int ~= "negint\n";
+            this.as_real = term0.as_real ~= "negreal\n";
+            this.expr_type = term0.expr_type;
+        }
+
+        ubyte term_index
     	
-    	foreach(ref term; node.children) {
-    	
-    		switch(term.name) {
-    			case "PROMAL.Term":
-        			auto term_output = new Term(term, this.program);
-    				ret_string ~= to!string(term_output);		
-    				break;
+    	for(term_index = 1; term_index < this.node.children.length; term_index++) {
+    	    ParseTree term = this.node.children[term_index];
+
+            Term t = new Term(term.children[0], this.program);
+            t.eval();
+
+            this.result_type = this.getHigherType(t.expr_type, this.expr_type);
+                
+    		switch(t.name) {
     				
   				case "PROMAL.Minus":
-  				
-					if(count == 0) { // Substract from zero
-					
-					}
-					else { // Substract from previous Term
-						auto term_output = new Term(term.children[0], this.program);
-    	    			ret_string ~= to!string(term_output);
-    	    			ret_string ~= ""; // What types to substract?						
-					}
-
-    				break;
+                    this.as_byte ~= t.as_byte ~ "subb\n";  			        
+                    this.as_word ~= t.as_word ~ "subw\n";
+                    this.as_int ~= t.as_int ~ "subi\n";
+                    this.as_real ~= t.as_real ~ "subr\n";
+                    break;
     				
 			    case "PROMAL.Plus":
-				    auto term_output = new Term(term.children[0], this.program);
-        			ret_string ~= to!string(term_output);    		
+				    this.as_byte ~= t.as_byte ~ "addb\n";  			        
+                    this.as_word ~= t.as_word ~ "addw\n";
+                    this.as_int ~= t.as_int ~ "addi\n";
+                    this.as_real ~= t.as_real ~ "addr\n";
 			        break;
 			        
 		        default:
@@ -54,8 +77,6 @@ class Simplexp: Node
 		            exit(1);
 		            break;
     		}
-    		
-    		count++;
     	}
     	
     	return ret_string;
