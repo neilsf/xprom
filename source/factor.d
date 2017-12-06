@@ -6,6 +6,7 @@ import program;
 import std.conv;
 import excess;
 import std.stdio;
+import expression;
 
 class Factor: Node
 {
@@ -130,7 +131,12 @@ class Factor: Node
 				break;
 
             case "PROMAL.Exp":
-                // TODO recursive evaluate          
+                auto exp = new Expression(fact, this.program);
+                this.as_byte = exp.as_byte;
+                this.as_word = exp.as_word;
+                this.as_int = exp.as_int;
+                this.as_real = exp.as_real;
+                this.expr_type = exp.expr_type;    
                 break;
     	}
     	return ret_string;

@@ -4,6 +4,8 @@ const ARRAY_LEN = 10
 
 global real HWorld[ARRAY_LEN]
 global real b
+global int h
+global word a
 global int MyInt[10, ARRAY_LEN ,210]
 
 ext byte BACKGROUND_COLOR at $d020
@@ -16,5 +18,5 @@ data byte smalls = $fe, $fd, $02, 128, 99
 data int Loooongs = -45700, 2000000, 3
 
 begin
-    a = 5 * 6 and 192 or b > true
+    a = h > 64700 or false
 end

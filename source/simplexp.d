@@ -28,6 +28,7 @@ class Simplexp: Node
     	ubyte count = 0;
 
         if(this.node.children[0].name == "PROMAL.Term") {
+
             auto term0 = new Term(this.node.children[0], this.program);
             term0.eval();            
             this.as_byte = term0.as_byte;
@@ -46,7 +47,7 @@ class Simplexp: Node
             this.expr_type = term0.expr_type;
         }
 
-        ubyte term_index
+        ubyte term_index;
     	
     	for(term_index = 1; term_index < this.node.children.length; term_index++) {
     	    ParseTree term = this.node.children[term_index];
@@ -54,19 +55,19 @@ class Simplexp: Node
             Term t = new Term(term.children[0], this.program);
             t.eval();
 
-            this.result_type = this.getHigherType(t.expr_type, this.expr_type);
+            this.expr_type = this.getHigherType(t.expr_type, this.expr_type);
                 
-    		switch(t.name) {
+    		switch(term.children[0].name) {
     				
   				case "PROMAL.Minus":
-                    this.as_byte ~= t.as_byte ~ "subb\n";  			        
+                    this.as_byte ~= t.as_byte ~ "subb\n";
                     this.as_word ~= t.as_word ~ "subw\n";
                     this.as_int ~= t.as_int ~ "subi\n";
                     this.as_real ~= t.as_real ~ "subr\n";
                     break;
     				
 			    case "PROMAL.Plus":
-				    this.as_byte ~= t.as_byte ~ "addb\n";  			        
+				    this.as_byte ~= t.as_byte ~ "addb\n";
                     this.as_word ~= t.as_word ~ "addw\n";
                     this.as_int ~= t.as_int ~ "addi\n";
                     this.as_real ~= t.as_real ~ "addr\n";

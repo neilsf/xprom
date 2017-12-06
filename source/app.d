@@ -1,6 +1,14 @@
 import std.stdio, std.file, std.array;
 import program;
-import promalg;
+
+//version (compilegrammar)
+
+   import promalgrammar;
+   //mixin(grammarcode);
+//else
+
+//  import promalg;
+
 
 void main()
 {
@@ -10,15 +18,15 @@ void main()
         source = source ~ infile.readln();
     }
 
-    //writeln(source);
-
     auto ast = PROMAL(source);
     writeln(ast);
     writeln("Name: "~ast.name);
     writeln("Success? " ~ (ast.successful == true ? "Yes" : "No"));
 
     Program program = new Program;
-    program.processAst(ast);		writeln(program.getDataSegment());
+    program.processAst(ast);
+    writeln(program.program_segment);
+    writeln(program.getDataSegment());
     writeln(program.getVarSegment());
 
 }

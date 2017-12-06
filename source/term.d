@@ -6,6 +6,7 @@ import program;
 import factor;
 import std.conv;
 import std.string;
+import std.stdio;
 
 class Term: Node
 {
@@ -20,14 +21,21 @@ class Term: Node
     
     string eval()
     {
-        string ret_string = "";
+       string ret_string = "";
     	
         ubyte factor_index = 0;
 
         ParseTree firstfactor = node.children[factor_index];
         auto ffact = new Factor(firstfactor, this.program);
-        ffact.eval();
+
         this.expr_type = ffact.expr_type;
+
+        if(node.children.length == 1) {
+            this.as_byte = ffact.as_byte;
+            this.as_word = ffact.as_word;
+            this.as_int = ffact.as_int;
+            this.as_real = ffact.as_real;
+        }
         
     	for(factor_index = 1; factor_index < node.children.length; factor_index++) {
 
@@ -68,19 +76,21 @@ class Term: Node
 
         switch(this.expr_type) {
             case 'b':
-                this.as_word = this.as_byte ~ "pla\n";
-                this.as_int = this.as_byte ~ "pla\n";
+                this.as_word = this.as_byte ~ "pzero\n";
+                this.as_int = this.as_word ~ "pzero\n";
                 this.as_real = this.as_byte ~ "byte2real\n";
             break;
 
             case 'w':
-                this.as_int = this.as_byte ~ "pla\n";
+                this.as_int = this.as_word ~ "pzero\n";
                 this.as_real = this.as_byte ~ "word2real\n";
             break;
 
             case 'i':
                 this.as_real = this.as_byte ~ "int2real\n";
             break;
+
+            default: {} break;
 
         }
     	

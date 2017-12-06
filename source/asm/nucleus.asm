@@ -124,6 +124,20 @@
 	sta arg.getValue()
 }
 
+/* Pull real to variable */
+.pseudocommand plr2var arg {
+	pla
+	sta arg.getValue()+4
+	pla
+	sta arg.getValue()+3
+	pla
+	sta arg.getValue()+2
+	pla
+	sta arg.getValue()+1
+	pla
+	sta arg.getValue()
+}
+
 /* Compare two bytes on stack for less than */
 .pseudocommand cmpblt {
 			pla
@@ -674,4 +688,12 @@ end:
 
 .pseudocommand real2int {
 
+}
+
+.pseudocommand _cmpr{
+    
+}
+
+.pseudocommand cmprgt {
+    
 }

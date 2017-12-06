@@ -248,6 +248,47 @@ class Program
     	
     	}
     }
+
+    void assignment(ParseTree node)
+    {
+        string identifier = node.children[0].matches[0];
+        if(!this.idExists(identifier)) {
+            this.error(identifier~" is not defined"); 
+        }
+
+        if(constExists(identifier)) {
+            this.error(identifier~" is a constant");             
+        }
+
+        Variable v = this.findVariable(identifier);
+        auto exp = new Expression(node.children[1], this);
+        
+        final switch(v.type) {
+            case 'b':
+                this.program_segment ~= exp.as_byte;
+                this.program_segment ~= "pullb2var _" ~v.name~"\n";
+            break;
+
+            case 'w':
+                this.program_segment ~= exp.as_word;
+                this.program_segment ~= "pullw2var _" ~v.name~"\n";
+            break;
+
+            case 'i':
+                this.program_segment ~= exp.as_int;
+                this.program_segment ~= "pulli2var _" ~v.name~"\n";
+            break;
+
+            case 'r':
+                this.program_segment ~= exp.as_real;
+                this.program_segment ~= "pullr2var _" ~v.name~"\n";
+            break;
+
+        }
+        
+        writeln(exp);
+        
+    }
   
     ubyte[3] intToBin(int number)
     {
@@ -397,9 +438,8 @@ class Program
                         this.subDef(node);
                         break;
 
-                    case "PROMAL.Exp":
-                        auto exp = new Expression(node, this);
-                        writeln(exp);
+                    case "PROMAL.Assignment":
+                        this.assignment(node);
                         break;
 
                     default:

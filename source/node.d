@@ -2,6 +2,7 @@ module node;
 
 import pegged.grammar;
 import program;
+import std.string;
 
 interface NodeInterface
 {
