@@ -3,6 +3,7 @@ import pegged.grammar;
 import core.stdc.stdlib;
 import excess;
 import expression;
+import procedure;
 
 struct Variable {
     ushort location;
@@ -33,6 +34,7 @@ class Program
     Variable[] variables;
     Variable[] external_variables;
     Variable[] program_data;
+    Procedure[] procedures;
     Const[] constants;
     short next_var_loc = 0xc00;
     string program_segment;
@@ -286,8 +288,16 @@ class Program
 
         }
         
-        writeln(exp);
-        
+        writeln(exp);   
+    }
+
+    void sub_def(ParseTree node)
+    {
+        string type = node.matches[0];
+        if(type == "proc") {
+            auto proc = new Procedure(this);
+            proc.define(node);
+        }
     }
   
     ubyte[3] intToBin(int number)
@@ -442,6 +452,10 @@ class Program
                         this.assignment(node);
                         break;
 
+                    case "PROMAL.Sub_def":
+                        this.sub_def(node);
+                        break;
+                        
                     default:
                         foreach(ref child; node.children) {
                             walkAst(child);

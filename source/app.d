@@ -28,6 +28,7 @@ void main()
     writeln(program.program_segment);
     writeln(program.getDataSegment());
     writeln(program.getVarSegment());
+    writeln(program.procedures);
 
 }
 
