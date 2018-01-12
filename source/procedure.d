@@ -24,7 +24,7 @@ class Procedure
         this.id = node.children[i].matches[0];
         i++;
         while(node.children[i].name == "PROMAL.Arg_def") {
-            this.args ~= Argument(node.children[i].children[1].matches[0], node.children[i].children[2].matches[0]);
+            this.args ~= Argument(node.children[i].children[1].matches[0], to!char(node.children[i].children[2].matches[0]));
             i++;
         }
 

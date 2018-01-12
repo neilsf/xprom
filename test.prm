@@ -18,5 +18,6 @@ data byte smalls = $fe, $fd, $02, 128, 99
 data int Loooongs = -45700, 2000000, 3
 
 begin
-    a = h > 64700 or false
+    h = 9000
+    a = h > 64700 or h < 100
 end

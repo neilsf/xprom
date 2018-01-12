@@ -263,32 +263,31 @@ class Program
         }
 
         Variable v = this.findVariable(identifier);
-        auto exp = new Expression(node.children[1], this);
         
+        auto exp = new Expression(node.children[1], this);
+
         final switch(v.type) {
             case 'b':
                 this.program_segment ~= exp.as_byte;
-                this.program_segment ~= "pullb2var _" ~v.name~"\n";
+                this.program_segment ~= "plb2var _" ~v.name~"\n";
             break;
 
             case 'w':
                 this.program_segment ~= exp.as_word;
-                this.program_segment ~= "pullw2var _" ~v.name~"\n";
+                this.program_segment ~= "plw2var _" ~v.name~"\n";
             break;
 
             case 'i':
                 this.program_segment ~= exp.as_int;
-                this.program_segment ~= "pulli2var _" ~v.name~"\n";
+                this.program_segment ~= "pli2var _" ~v.name~"\n";
             break;
 
             case 'r':
                 this.program_segment ~= exp.as_real;
-                this.program_segment ~= "pullr2var _" ~v.name~"\n";
+                this.program_segment ~= "plr2var _" ~v.name~"\n";
             break;
 
         }
-        
-        writeln(exp);   
     }
 
     void sub_def(ParseTree node)
@@ -451,11 +450,11 @@ class Program
                     case "PROMAL.Assignment":
                         this.assignment(node);
                         break;
-
+/*
                     case "PROMAL.Sub_def":
                         this.sub_def(node);
                         break;
-                        
+  */                      
                     default:
                         foreach(ref child; node.children) {
                             walkAst(child);

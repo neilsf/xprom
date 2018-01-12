@@ -17,7 +17,10 @@ class Expression: Node
     string as_int = "";
     string as_real = "";
     
-    this(ParseTree node, Program program) { super(node, program); }
+    this(ParseTree node, Program program)
+    { 
+        super(node, program);
+    }
 
     string eval()
     {
