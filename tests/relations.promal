@@ -1,0 +1,18 @@
+program relations_test
+
+int x
+int y
+byte a
+
+begin
+    x = -12400
+    y = 32
+    a = x < y
+    put a
+    a = x <= y
+    put a
+    a = x > y
+    put a
+    a = x >= y
+    put a
+end
