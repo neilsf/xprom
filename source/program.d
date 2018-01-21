@@ -298,6 +298,11 @@ class Program
             proc.define(node);
         }
     }
+
+    void builtin_proc_call(ParseTree node)
+    {
+        writeln(node.matches[0]);
+    }
   
     ubyte[3] intToBin(int number)
     {
@@ -450,11 +455,11 @@ class Program
                     case "PROMAL.Assignment":
                         this.assignment(node);
                         break;
-/*
-                    case "PROMAL.Sub_def":
-                        this.sub_def(node);
+
+                    case "PROMAL.Builtin_proc_call":
+                        this.builtin_proc_call(node);
                         break;
-  */                      
+              
                     default:
                         foreach(ref child; node.children) {
                             walkAst(child);

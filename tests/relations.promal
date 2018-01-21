@@ -1,8 +1,8 @@
 program relations_test
 
-int x
-int y
-byte a
+global int x
+global int y
+global byte a
 
 begin
     x = -12400
