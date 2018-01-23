@@ -45,7 +45,10 @@ class Factor: Node
                 break;
 	    		
     		case "PROMAL.String":
-    			{} // TODO
+    			this.program.data_segment ~= "stringlit_" ~ to!string(program.stringlit_counter) ~ ": .text " ~ fact.matches[0] ~ "\n";
+                this.expr_type = 's';
+                this.as_word ~="pword " ~ "stringlit_" ~ to!string(program.stringlit_counter);
+    			program.stringlit_counter+=1;
     			break;
     			
   			case "PROMAL.True":

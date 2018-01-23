@@ -8,7 +8,7 @@ begin
     x = -12400
     y = 32
     a = x < y
-    put a
+    put "Hello world ", a
     a = x <= y
     put a
     a = x > y

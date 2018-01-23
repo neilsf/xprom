@@ -4,6 +4,7 @@ import core.stdc.stdlib;
 import excess;
 import expression;
 import procedure;
+import promal_stdlib.put;
 
 struct Variable {
     ushort location;
@@ -37,6 +38,7 @@ class Program
     Procedure[] procedures;
     Const[] constants;
     short next_var_loc = 0xc00;
+    ushort stringlit_counter = 0;
     string program_segment;
     string data_segment;
     
@@ -299,9 +301,19 @@ class Program
         }
     }
 
-    void builtin_proc_call(ParseTree node)
+    void stdlib_call(ParseTree node)
     {
-        writeln(node.matches[0]);
+        string procname = node.matches[0];
+        switch(procname) {
+            case "put":
+                auto dispatcher = new Put(node, this);            
+                break;
+            
+            default:
+                this.error("Stdlib procedure doesn't exist: "~procname);
+                break;
+        }
+        
     }
   
     ubyte[3] intToBin(int number)
@@ -456,8 +468,8 @@ class Program
                         this.assignment(node);
                         break;
 
-                    case "PROMAL.Builtin_proc_call":
-                        this.builtin_proc_call(node);
+                    case "PROMAL.Stdlib_call":
+                        this.stdlib_call(node);
                         break;
               
                     default:
