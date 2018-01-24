@@ -1,0 +1,4 @@
+program printing_test
+begin
+    put "Hello world, ", "hello again", 13
+end

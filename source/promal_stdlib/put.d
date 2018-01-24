@@ -18,21 +18,16 @@ class Put: Node
             auto exp = new Expression(child, this.program);
             switch(exp.expr_type) {
                 case 'b':
+                    program.program_segment ~= "stdlib_putchar "~exp.as_byte;
+                    break;
                 case 'w':
+                    program.program_segment ~= "stdlib_putstr "~exp.as_word;
+                    break;
                 case 'i':
-                
-                    break;
-                    
                 case 'r':
-                
-                    break;
-                    
-                case 's':
-                    program.program_segment ~= "stdlib.puts";
-                    break;
-                   
                 default:
-                    
+                    program.error("PUT only accepts arguments of type byte or string");
+                    return "";
                     break;
             }  
         }
