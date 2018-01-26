@@ -97,7 +97,6 @@ class Expression: Node
         final switch(this.expr_type) {
             case 'b': ret = this.as_byte; break;
             case 'w':
-            case 's':
              ret = this.as_word;
              break;
             case 'i': ret = this.as_int; break;

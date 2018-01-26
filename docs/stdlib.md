@@ -15,4 +15,21 @@ Usage: `put item [,item ...]`
 
 Outputs one ore more strings or characters to the display. PUT accepts one or more arguments, each of them has to be of type WORD (a pointer to a string) or BYTE (a single character).
 
+#### Examples
 
+`put "Hello World", 13`
+
+The above example outputs the string "Hello World" and the carriage return character.
+
+```
+program example put
+word hellostr
+begin
+    hellostr = "Hello World"
+    put "My example is: ", hellostr, 13
+end
+```
+
+#### Notes
+
+- You cannot use PUT to display numeric values. Please see OUTPUT.

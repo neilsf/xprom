@@ -29,7 +29,8 @@ class Term: Node
         auto ffact = new Factor(firstfactor, this.program);
 
         this.expr_type = ffact.expr_type;
-
+        writeln("Exp_type: "~to!string(this.expr_type));
+        
         if(node.children.length == 1) {
             this.as_byte = ffact.as_byte;
             this.as_word = ffact.as_word;
@@ -93,6 +94,8 @@ class Term: Node
             default: {} break;
 
         }
+
+        writeln("As_word: "~this.as_word);
     	
     	return ret_string;
     }    

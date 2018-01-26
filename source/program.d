@@ -304,6 +304,7 @@ class Program
     void stdlib_call(ParseTree node)
     {
         string procname = node.matches[0];
+        writeln(procname);
         switch(procname) {
             case "put":
                 auto dispatcher = new Put(node, this);            
@@ -436,10 +437,10 @@ class Program
 
         void walkAst(ParseTree node)
         {
-            //writeln("  ".replicate(level) ~ "Child name: "~node.name);
             level +=1;
-
+            
             switch(node.name) {
+                
                     case "PROMAL.Program_decl":
                         this.processProgram(node);
                         break;
@@ -469,7 +470,6 @@ class Program
                         break;
 
                     case "PROMAL.Stdlib_call":
-                        this.stdlib_call(node);
                         break;
               
                     default:

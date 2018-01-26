@@ -3,6 +3,7 @@ import node;
 import pegged.grammar;
 import program;
 import expression;
+import std.stdio;
 
 class Put: Node
 {
@@ -18,16 +19,17 @@ class Put: Node
             auto exp = new Expression(child, this.program);
             switch(exp.expr_type) {
                 case 'b':
-                    program.program_segment ~= "stdlib_putchar "~exp.as_byte;
+                    program.program_segment ~= exp.as_byte ~ "\n";
+                    program.program_segment ~= "stdlib_putchar\n";
                     break;
                 case 'w':
-                    program.program_segment ~= "stdlib_putstr "~exp.as_word;
+                    program.program_segment ~= exp.as_word ~ "\n";
+                    program.program_segment ~= "stdlib_putstr\n";
                     break;
                 case 'i':
                 case 'r':
                 default:
                     program.error("PUT only accepts arguments of type byte or string");
-                    return "";
                     break;
             }  
         }
