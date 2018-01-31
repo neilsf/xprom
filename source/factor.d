@@ -45,9 +45,9 @@ class Factor: Node
                 break;
 	    		
     		case "PROMAL.String":
-    			this.program.data_segment ~= "stringlit_" ~ to!string(program.stringlit_counter) ~ ": .text " ~ fact.matches[0] ~ "\n";
+    			this.program.data_segment ~= "stringlit_" ~ to!string(program.stringlit_counter) ~ ":\n.encoding \"petscii_mixed\"\n.text " ~ fact.matches[0] ~ "\n.byte 0\n";
                 this.expr_type = 'w';
-                this.as_word ~="pword " ~ "stringlit_" ~ to!string(program.stringlit_counter)
+                this.as_word ~="paddr " ~ "stringlit_" ~ to!string(program.stringlit_counter);
     			program.stringlit_counter+=1;
     			break;
     			

@@ -1,5 +1,5 @@
 program printing_test
 
 begin
-    put "Hello world ", "and again ", 13
+    put "hello world ", "and again ", 13
 end

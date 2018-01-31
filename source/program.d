@@ -304,7 +304,6 @@ class Program
     void stdlib_call(ParseTree node)
     {
         string procname = node.matches[0];
-        writeln(procname);
         switch(procname) {
             case "put":
                 auto dispatcher = new Put(node, this);            
@@ -470,6 +469,7 @@ class Program
                         break;
 
                     case "PROMAL.Stdlib_call":
+                        this.stdlib_call(node);
                         break;
               
                     default:
