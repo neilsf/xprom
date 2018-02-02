@@ -52,7 +52,7 @@ class Expression: Node
     	  			if(rel.expr_type != 'b') {
                         this._type_error();
                     }
-    	  			this.as_byte ~= rel.as_byte ~ "orb\n";
+    	  			this.as_byte ~= rel.as_byte ~ "\torb\n";
     				break;
     				
     			case "PROMAL.And":
@@ -60,7 +60,7 @@ class Expression: Node
     	  			if(rel.expr_type != 'b') {
                         this._type_error();
                     }
-    	  			this.as_byte ~= rel.as_byte ~ "andb\n";
+    	  			this.as_byte ~= rel.as_byte ~ "\tandb\n";
     				break;
     		
     			case "PROMAL.Xor":
@@ -68,7 +68,7 @@ class Expression: Node
     	  			if(rel.expr_type != 'b') {
                         this._type_error();
                     }
-    	  			this.as_byte ~= rel.as_byte ~ "xorb\n";
+    	  			this.as_byte ~= rel.as_byte ~ "\txorb\n";
     				break;
     				
     			default:
@@ -79,9 +79,9 @@ class Expression: Node
     		}
   		}
 
-        this.as_word = this.as_byte ~ "pzero\n";
-        this.as_int = this.as_word ~ "pzero\n";
-        this.as_real = this.as_byte ~ "byte2real\n";
+        this.as_word = this.as_byte ~ "\tpzero\n";
+        this.as_int = this.as_word ~ "\tpzero\n";
+        this.as_real = this.as_byte ~ "\tbyte2real\n";
   		
   		return ret_string;
     }

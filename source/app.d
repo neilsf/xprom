@@ -1,4 +1,4 @@
-import std.stdio, std.file, std.array, std.string, std.getopt;
+import std.stdio, std.file, std.array, std.string, std.getopt, std.path;
 import core.stdc.stdlib;
 import program;
 import pegged.grammar;
@@ -11,7 +11,7 @@ import pegged.grammar;
 
 mixin(grammar(`
 PROMAL:
-    Program < Program_decl (Const_def / Global_decl / Ext_decl / Data_def / Sub_def)* "begin" NL Stmt+ "end" NL? WS*
+    Program < Program_decl (Const_def / Global_decl / Ext_decl / Data_def / Sub_def)* "begin" NL Stmt+ End NL? WS*
 
     Program_decl < "program" WS id "own"? "export"? NL
     Const_def < "const" (WS Vartype)? WS id WS? "=" WS? Number NL
@@ -21,6 +21,8 @@ PROMAL:
     Asm_decl < "asm" WS ("func" / "proc") WS Vartype WS id
     Data_def < "data" WS Vartype WS id "[]"? WS? "=" WS? Data_member (WS? "," WS? Data_member)* NL
     Data_member < String / Number
+
+    End < "end"
 
     Sub_def < ("proc" / ("func" WS Vartype) ) WS id NL (Arg_def)* (Vartype id NL)* (Const_def / ("own" WS Global_decl) / Ext_decl / Data_def / ("list" WS Exp? NL))* "begin" NL Stmt+ "end" NL
 
@@ -109,6 +111,7 @@ PROMAL:
 void main(string[] args)
 {
     string filename = args[1];
+    string outfile;
 
     File infile;
     
@@ -135,11 +138,44 @@ void main(string[] args)
 
     Program program = new Program;
     program.processAst(ast);
-    writeln("jmp program_start\n#import \"nucleus.asm\"\n#import \"stdlib.asm\"");
-    writeln("program_start:");
-    writeln(program.program_segment);
-    writeln(program.getDataSegment());
-    writeln(program.getVarSegment());
-    writeln(program.procedures);
+
+    string path = std.path.dirName(std.file.thisExePath());
+
+    outfile ~= 
+    "\tPROCESSOR 6502\n"~
+    "\tSEG UPSTART\n"~
+    "\tORG $0801\n"~
+    "\t; BASIC UPSTART\n"~        
+    "\tDC.W nxt_line\n"~
+    "\tDC.W 2018\n"~
+    "\tHEX 9e\n"~
+    "\tIF prg_start\n"~
+    "\tDC.B [prg_start]d\n"~
+    "\tENDIF\n"~
+    "\tHEX 00\n"~
+    "nxt_line:\n"~
+    "\tHEX 00 00\n"~
+    "\t; -------------------\n"~
+    "\tINCDIR \""~path~"/lib\"\n"~
+    "\tINCLUDE \"nucleus.asm\"\n"~
+    "\tINCLUDE \"stdlib.asm\"\n"~
+    "prg_start:\n"~
+    program.program_segment~
+    "prg_end:\n" ~
+    "\t; -------------------\n"~
+    "\tSEG data\n"~
+    "\tORG prg_end+1\n"~
+     "data_start:\n"~
+    program.getDataSegment() ~
+    "data_end:\n"~
+    "\t; -------------------\n"~
+    "\tSEG.U variables\n"~
+    "\tORG data_end+1\n"~
+    program.getVarSegment();
+    //writeln(program.procedures);
+
+    /* TODO Call DASM to assemble it! */
+
+    writeln(outfile);
 }
 

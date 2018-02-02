@@ -19,12 +19,12 @@ class Put: Node
             auto exp = new Expression(child, this.program);
             switch(exp.expr_type) {
                 case 'b':
-                    program.program_segment ~= exp.as_byte ~ "\n";
-                    program.program_segment ~= "stdlib_putchar\n";
+                    program.program_segment ~= exp.as_byte;
+                    program.program_segment ~= "\tstdlib_putchar\n";
                     break;
                 case 'w':
-                    program.program_segment ~= exp.as_word ~ "\n";
-                    program.program_segment ~= "stdlib_putstr\n";
+                    program.program_segment ~= exp.as_word ~"\n";
+                    program.program_segment ~= "\tstdlib_putstr\n";
                     break;
                 case 'i':
                 case 'r':

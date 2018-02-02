@@ -7,6 +7,7 @@ import std.conv;
 import excess;
 import std.stdio;
 import expression;
+import petscii;
 
 class Factor: Node
 {
@@ -30,52 +31,55 @@ class Factor: Node
         final switch(fact.name) {
     		case "PROMAL.Charlit":
                 ubyte val = fact.matches[0][1];
-                this.as_byte = "lda #"~to!string(val)~"\npha\n";
-                this.as_word = this.as_byte ~ "phzero\n";
-                this.as_int = this.as_word ~ "phzero\n";
+                this.as_byte = "\tlda #"~to!string(val)~"\npha\n";
+                this.as_word = this.as_byte ~ "\tphzero\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
 
                 ubyte[5] bytes = excessConvert(val);
                 this.as_real = "";
-                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[0])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[1])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[2])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[3])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[4])~"\n\tpha\n";
                 this.expr_type = 'b';
                 break;
 	    		
     		case "PROMAL.String":
-    			this.program.data_segment ~= "stringlit_" ~ to!string(program.stringlit_counter) ~ ":\n.encoding \"petscii_mixed\"\n.text " ~ fact.matches[0] ~ "\n.byte 0\n";
+                string str = fact.matches[0][1..$-1];
+    			this.program.data_segment ~= 
+                    "stringlit_" ~ to!string(program.stringlit_counter) ~ "\tHEX\t" ~ ascii_to_petscii_hex(str) ~ "\n";
+
                 this.expr_type = 'w';
-                this.as_word ~="paddr " ~ "stringlit_" ~ to!string(program.stringlit_counter);
+                this.as_word ~="\tpaddr " ~ "stringlit_" ~ to!string(program.stringlit_counter);
     			program.stringlit_counter+=1;
     			break;
     			
   			case "PROMAL.True":
-  				this.as_byte =  "pone\n";
-                this.as_word = this.as_byte ~ "phzero\n";
-                this.as_int = this.as_word ~ "phzero\n";
+  				this.as_byte =  "\tpone\n";
+                this.as_word = this.as_byte ~ "\tphzero\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
   				ubyte[5] bytes = excessConvert(1.0);
                 this.as_real = "";
-                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[0])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[1])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[2])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[3])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[4])~"\n\tpha\n";
                 this.expr_type = 'b';
   				break;
   				
   			case "PROMAL.False":
-  				this.as_byte =  "pzero\n";
-                this.as_word = this.as_byte ~ "phzero\n";
-                this.as_int = this.as_word ~ "phzero\n";
+  				this.as_byte =  "\tpzero\n";
+                this.as_word = this.as_byte ~ "\tphzero\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
   				ubyte[5] bytes = excessConvert(0.0);
                 this.as_real = "";
-                this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
-                this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[0])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[1])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[2])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[3])~"\n\tpha\n";
+                this.as_real~= "\tlda #"~to!string(bytes[4])~"\n\tpha\n";
                 this.expr_type = 'b';
   				break;
 				
@@ -85,10 +89,10 @@ class Factor: Node
                     this.program.error("Illegal type: NOT only accepts byte type as operand.");
                 }
                 this.as_byte = operand.as_byte;
-                this.as_byte~= "notbool\n";
-                this.as_word = this.as_byte ~ "phzero\n";
-                this.as_int = this.as_word ~ "phzero\n";
-                this.as_real = this.as_byte ~ "byte2real\n";
+                this.as_byte~= "\tnotbool\n";
+                this.as_word = this.as_byte ~ "\tphzero\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
+                this.as_real = this.as_byte ~ "\tbyte2real\n";
                 this.expr_type = 'b';
     			break;
     		
@@ -106,27 +110,27 @@ class Factor: Node
                     Variable variable = this.program.findVariable(fact.matches[0]);
                     final switch(variable.type) {
                         case 'b':
-                            this.as_byte ="pbyte _"~variable.name~"\n";
-                            this.as_word = this.as_byte ~ "phzero\n";
-                            this.as_int = this.as_word ~ "phzero\n";
-                            this.as_real = this.as_byte ~ "byte2real\n";
+                            this.as_byte ="\tpbyte _"~variable.name~"\n";
+                            this.as_word = this.as_byte ~ "\tphzero\n";
+                            this.as_int = this.as_word ~ "\tphzero\n";
+                            this.as_real = this.as_byte ~ "\tbyte2real\n";
                             this.expr_type = 'b';
                             break;
                         case 'w':
-                            this.as_byte ="pbyte _"~variable.name~"\n";
-                            this.as_word ="pword _"~variable.name~"\n";
-                            this.as_int = this.as_word ~ "phzero\n";
-                            this.as_real = "word2real\n";
+                            this.as_byte ="\tpbyte _"~variable.name~"\n";
+                            this.as_word ="\tpword _"~variable.name~"\n";
+                            this.as_int = this.as_word ~ "\tphzero\n";
+                            this.as_real = "\tword2real\n";
                             this.expr_type = 'w';
                             break;
                         case 'i':
-                            this.as_byte ="pbyte _"~variable.name~"\n";
-                            this.as_word ="pword _"~variable.name~"\n";
-                            this.as_int ="pint _"~variable.name~"\n";
+                            this.as_byte ="\tpbyte _"~variable.name~"\n";
+                            this.as_word ="\tpword _"~variable.name~"\n";
+                            this.as_int ="\tpint _"~variable.name~"\n";
                             this.expr_type = 'i';
                             break;
                         case 'r':
-                            this.as_real ="prvar _"~variable.name~"\n";
+                            this.as_real ="\tprvar _"~variable.name~"\n";
                             this.expr_type = 'r';
                             break;
                     }
@@ -149,30 +153,30 @@ class Factor: Node
     {
 		final switch(lit_type) {
    			case "b":
-				this.as_byte = "pbyte #"~to!string(this.program.parseInt(number))~"\n";
-                this.as_word = this.as_byte ~ "phzero\n";
-                this.as_int = this.as_word ~ "phzero\n";
+				this.as_byte = "\tpbyte #"~to!string(this.program.parseInt(number))~"\n";
+                this.as_word = this.as_byte ~ "\tphzero\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
 				this.expr_type = 'b';
 				break;
 						
 			case "w":
-                this.as_byte = "pbyte #<"~to!string(this.program.parseInt(number))~"\n";
-				this.as_word = "pword #"~to!string(this.program.parseInt(number))~"\n";
-                this.as_int = this.as_word ~ "phzero\n";
+                this.as_byte = "\tpbyte #<"~to!string(this.program.parseInt(number))~"\n";
+				this.as_word = "\tpword #"~to!string(this.program.parseInt(number))~"\n";
+                this.as_int = this.as_word ~ "\tphzero\n";
 				this.expr_type = 'w';
 				break;
 						
 			case "i":
-                this.as_byte = this.as_word = "pword #"~to!string(this.program.parseInt(number) & 0x0000ff)~"\n";
-                this.as_word = "pword #"~to!string(this.program.parseInt(number) & 0x00ffff)~"\n";
-                this.as_int = "pint #"~to!string(this.program.parseInt(number))~"\n";
+                this.as_byte = this.as_word = "\tpword #"~to!string(this.program.parseInt(number) & 0x0000ff)~"\n";
+                this.as_word = "\tpword #"~to!string(this.program.parseInt(number) & 0x00ffff)~"\n";
+                this.as_int = "\tpint #"~to!string(this.program.parseInt(number))~"\n";
 				this.expr_type = 'i';
 				break;
 						
 			case "r":
 				ubyte[5] bytes = excessConvert(this.program.parseFloat(number));
 				foreach(b; bytes) {
-					this.as_real ~= "pbyte #"~to!string(b)~"\n";
+					this.as_real ~= "\tpbyte #"~to!string(b)~"\n";
 				}
 				this.expr_type = 'r';
 				break;
@@ -181,11 +185,11 @@ class Factor: Node
         if(lit_type == "b" || lit_type == "w" || lit_type == "i") {
             ubyte[5] bytes = excessConvert(to!real(this.program.parseInt(number)));
             this.as_real = "";
-            this.as_real~= "lda #"~to!string(bytes[0])~"\npha\n";
-            this.as_real~= "lda #"~to!string(bytes[1])~"\npha\n";
-            this.as_real~= "lda #"~to!string(bytes[2])~"\npha\n";
-            this.as_real~= "lda #"~to!string(bytes[3])~"\npha\n";
-            this.as_real~= "lda #"~to!string(bytes[4])~"\npha\n";
+            this.as_real~= "\tlda #"~to!string(bytes[0])~"\n\tpha\n";
+            this.as_real~= "\tlda #"~to!string(bytes[1])~"\n\tpha\n";
+            this.as_real~= "\tlda #"~to!string(bytes[2])~"\n\tpha\n";
+            this.as_real~= "\tlda #"~to!string(bytes[3])~"\n\tpha\n";
+            this.as_real~= "\tlda #"~to!string(bytes[4])~"\n\tpha\n";
         }
     }
 }

@@ -40,10 +40,10 @@ class Simplexp: Node
         else if(this.node.children[0].name == "PROMAL.Minus") {
             auto term0 = new Term(this.node.children[0].children[0], this.program);
             term0.eval();      
-            this.as_byte = term0.as_byte ~= "negbyte\n";
-            this.as_word = term0.as_word ~= "negword\n";
-            this.as_int = term0.as_int ~= "negint\n";
-            this.as_real = term0.as_real ~= "negreal\n";
+            this.as_byte = term0.as_byte ~= "\tnegbyte\n";
+            this.as_word = term0.as_word ~= "\tnegword\n";
+            this.as_int = term0.as_int ~= "\tnegint\n";
+            this.as_real = term0.as_real ~= "\tnegreal\n";
             this.expr_type = term0.expr_type;
         }
 
@@ -60,17 +60,17 @@ class Simplexp: Node
     		switch(term.children[0].name) {
     				
   				case "PROMAL.Minus":
-                    this.as_byte ~= t.as_byte ~ "subb\n";
-                    this.as_word ~= t.as_word ~ "subw\n";
-                    this.as_int ~= t.as_int ~ "subi\n";
-                    this.as_real ~= t.as_real ~ "subr\n";
+                    this.as_byte ~= t.as_byte ~ "\tsubb\n";
+                    this.as_word ~= t.as_word ~ "\tsubw\n";
+                    this.as_int ~= t.as_int ~ "\tsubi\n";
+                    this.as_real ~= t.as_real ~ "\tsubr\n";
                     break;
     				
 			    case "PROMAL.Plus":
-				    this.as_byte ~= t.as_byte ~ "addb\n";
-                    this.as_word ~= t.as_word ~ "addw\n";
-                    this.as_int ~= t.as_int ~ "addi\n";
-                    this.as_real ~= t.as_real ~ "addr\n";
+				    this.as_byte ~= t.as_byte ~ "\taddb\n";
+                    this.as_word ~= t.as_word ~ "\taddw\n";
+                    this.as_int ~= t.as_int ~ "\taddi\n";
+                    this.as_real ~= t.as_real ~ "\taddr\n";
 			        break;
 			        
 		        default:

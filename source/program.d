@@ -120,22 +120,22 @@ class Program
     
     string getDataSegment()
     {
-    	string ret = "\n*=* \"data\"\n";
+    	string ret;
     	ret ~= this.data_segment;
     	return ret;
     }
     
     string getVarSegment()
     {
-    	string varsegment = "\n*=* \"globals\" virtual\n";
+    	string varsegment;
     	foreach(ref variable; this.variables) {
     		ubyte varlen = this.varlen[variable.type];
     		int array_len = variable.array_subscript[0] * variable.array_subscript[1] * variable.array_subscript[2];
-    		varsegment ~= "_" ~ variable.name ~": .fill " ~ to!string(varlen * array_len) ~ ",0\n";
+    		varsegment ~= "_" ~ variable.name ~"\tDS.B " ~ to!string(varlen * array_len) ~ "\n";
     	}
 
     	foreach(ref variable; this.external_variables) {
-    		varsegment ~= ".label _" ~ variable.name ~" = " ~ to!string(variable.location) ~ "\n";
+    		varsegment ~= "_" ~ variable.name ~"\tEQU " ~ to!string(variable.location) ~ "\n";
     	}
 
     	return varsegment;
@@ -271,22 +271,22 @@ class Program
         final switch(v.type) {
             case 'b':
                 this.program_segment ~= exp.as_byte;
-                this.program_segment ~= "plb2var _" ~v.name~"\n";
+                this.program_segment ~= "\tplb2var _" ~v.name~"\n";
             break;
 
             case 'w':
                 this.program_segment ~= exp.as_word;
-                this.program_segment ~= "plw2var _" ~v.name~"\n";
+                this.program_segment ~= "\tplw2var _" ~v.name~"\n";
             break;
 
             case 'i':
                 this.program_segment ~= exp.as_int;
-                this.program_segment ~= "pli2var _" ~v.name~"\n";
+                this.program_segment ~= "\tpli2var _" ~v.name~"\n";
             break;
 
             case 'r':
                 this.program_segment ~= exp.as_real;
-                this.program_segment ~= "plr2var _" ~v.name~"\n";
+                this.program_segment ~= "\tplr2var _" ~v.name~"\n";
             break;
 
         }
@@ -472,6 +472,10 @@ class Program
                         this.stdlib_call(node);
                         break;
               
+                    case "PROMAL.End":
+                        this.program_segment~="\trts\n";
+                        break;
+
                     default:
                         foreach(ref child; node.children) {
                             walkAst(child);

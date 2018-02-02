@@ -66,9 +66,9 @@ class Relation: Node
 
         this._buildRelation(rel_type, result_type, se_left, se_right);
 
-        this.as_word = this.as_byte ~ "phzero\n";
-        this.as_int = this.as_word ~ "phzero\n";
-        this.as_real = this.as_byte ~ "byte2real\n";
+        this.as_word = this.as_byte ~ "\tphzero\n";
+        this.as_int = this.as_word ~ "\tphzero\n";
+        this.as_real = this.as_byte ~ "\tbyte2real\n";
     
         return ret_string;
     }
@@ -77,16 +77,16 @@ class Relation: Node
     {
         final switch(expr_type) {
             case 'b':
-               this.as_byte = se_left.as_byte ~ se_right.as_byte ~ "cmpb"~rel_type~"\n"; 
+               this.as_byte = se_left.as_byte ~ se_right.as_byte ~ "\tcmpb"~rel_type~"\n"; 
             break;
             case 'w':
-               this.as_byte = se_left.as_word ~ se_right.as_word ~ "cmpw"~rel_type~"\n"; 
+               this.as_byte = se_left.as_word ~ se_right.as_word ~ "\tcmpw"~rel_type~"\n"; 
             break;
             case 'i':
-               this.as_byte = se_left.as_int ~ se_right.as_int ~ "cmpi"~rel_type~"\n"; 
+               this.as_byte = se_left.as_int ~ se_right.as_int ~ "\tcmpi"~rel_type~"\n"; 
             break;
             case 'r':
-               this.as_byte = se_left.as_real ~ se_right.as_real ~ "cmpr"~rel_type~"\n"; 
+               this.as_byte = se_left.as_real ~ se_right.as_real ~ "\tcmpr"~rel_type~"\n"; 
             break;
         }
     }

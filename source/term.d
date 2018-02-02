@@ -76,18 +76,18 @@ class Term: Node
 
         switch(this.expr_type) {
             case 'b':
-                this.as_word = this.as_byte ~ "pzero\n";
-                this.as_int = this.as_word ~ "pzero\n";
-                this.as_real = this.as_byte ~ "byte2real\n";
+                this.as_word = this.as_byte ~ "\tpzero\n";
+                this.as_int = this.as_word ~ "\tpzero\n";
+                this.as_real = this.as_byte ~ "\tbyte2real\n";
             break;
 
             case 'w':
-                this.as_int = this.as_word ~ "pzero\n";
-                this.as_real = this.as_byte ~ "word2real\n";
+                this.as_int = this.as_word ~ "\tpzero\n";
+                this.as_real = this.as_byte ~ "\tword2real\n";
             break;
 
             case 'i':
-                this.as_real = this.as_byte ~ "int2real\n";
+                this.as_real = this.as_byte ~ "\tint2real\n";
             break;
 
             default: {} break;
@@ -110,17 +110,17 @@ class Term: Node
                     this.as_byte ~= ffact.as_byte;
                     this.as_byte ~= fact.as_byte;
                     this.as_byte ~= byte_op ~ "\n";
-                    this.as_word ~= this.as_byte ~ "phzero\n";
-                    this.as_int ~= this.as_word ~ "phzero\n";
-                    this.as_real ~= this.as_byte ~ "byte2real\n";
+                    this.as_word ~= this.as_byte ~ "\tphzero\n";
+                    this.as_int ~= this.as_word ~ "\tphzero\n";
+                    this.as_real ~= this.as_byte ~ "\tbyte2real\n";
                 break;
 
                 case 'w':
                     this.as_word ~= ffact.as_word;
                     this.as_word ~= fact.as_word;
                     this.as_word ~= word_op ~ "\n";
-                    this.as_int ~= this.as_word ~ "phzero\n";
-                    this.as_real ~= this.as_word ~ "word2real\n";
+                    this.as_int ~= this.as_word ~ "\tphzero\n";
+                    this.as_real ~= this.as_word ~ "\tword2real\n";
                     this.expr_type = 'w';
                 break;
 
@@ -128,7 +128,7 @@ class Term: Node
                     this.as_int ~= ffact.as_int;
                     this.as_int ~= fact.as_int;
                     this.as_int ~= int_op ~ "\n";
-                    this.as_real~= this.as_int ~ "int2real\n";
+                    this.as_real~= this.as_int ~ "\tint2real\n";
                     this.expr_type = 'i';
                 break;
 
@@ -159,15 +159,15 @@ class Term: Node
                 case 'w':
                     this.as_word ~= fact.as_word;
                     this.as_word ~= word_op ~ "\n";
-                    this.as_int ~= this.as_word ~ "phzero\n";
-                    this.as_real ~= this.as_word ~ "word2real\n";
+                    this.as_int ~= this.as_word ~ "\tphzero\n";
+                    this.as_real ~= this.as_word ~ "\tword2real\n";
                     this.expr_type = 'w';
                 break;
 
                 case 'i':
                     this.as_int ~= fact.as_int;
                     this.as_int ~= int_op ~ "\n";
-                    this.as_real~= this.as_int ~ "int2real\n";
+                    this.as_real~= this.as_int ~ "\tint2real\n";
                     this.expr_type = 'i';
                 break;
 
