@@ -57,7 +57,7 @@ class Simplexp: Node
 
             this.expr_type = this.getHigherType(t.expr_type, this.expr_type);
                 
-    		switch(term.children[0].name) {
+    		switch(term.name) {
     				
   				case "PROMAL.Minus":
                     this.as_byte ~= t.as_byte ~ "\tsubb\n";

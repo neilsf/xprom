@@ -5,14 +5,14 @@ global int y
 global byte a
 
 begin
-    x = -12400
+    x = 124500
     y = 32
     a = x < y
-    put "Hello world ", a
+    put "Result of x < y: ", a+48, 13
     a = x <= y
-    put a
+    put "Result of x <= y: ", a+48, 13
     a = x > y
-    put a
+    put "Result of x > y: ", a+48, 13
     a = x >= y
-    put a
+    put "Result of x >= y: ", a+48, 13
 end

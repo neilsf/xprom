@@ -53,9 +53,9 @@ QINT	 	EQU $bc9b
 	
 	; Push one word variable on the stack
 	MAC pwordvar
-	lda {1}
+	lda.w {1}
 	pha
-	lda {1}+1
+	lda.w {1}+1
 	pha
 	ENDM
 
@@ -77,25 +77,25 @@ QINT	 	EQU $bc9b
 	
 	; Push integer variable on stack
 	MAC pintvar
-	lda {1}
+	lda.w {1}
 	pha
-	lda {1}+1
+	lda.w {1}+1
 	pha
-	lda {1}+2
+	lda.w {1}+2
 	pha
 	ENDM
 
 	; Push real variable on stack
 	MAC prvar
-	lda {1}
+	lda.w {1}
 	pha
-	lda {1}+1
+	lda.w {1}+1
 	pha
-	lda {1}+2
+	lda.w {1}+2
 	pha
-	lda {1}+3
+	lda.w {1}+3
 	pha
-	lda {1}+4
+	lda.w {1}+4
 	pha
 	ENDM
 
@@ -410,7 +410,7 @@ QINT	 	EQU $bc9b
 	bpl .phf
 .2:	lda.wx stack+6
 	cmp.wx stack+3
-	bpl .3
+	beq .3
 	bpl .phf
 .3:	DS.B 6, $e8 ; 6x inx
 	txs
@@ -423,7 +423,7 @@ QINT	 	EQU $bc9b
 	ENDM
 
 	; Compare two ints on stack for greater than
-	MAC cmpilte
+	MAC cmpigt
 	tsx
 	lda.wx stack+4
 	cmp.wx stack+1
@@ -435,7 +435,7 @@ QINT	 	EQU $bc9b
 	bpl .pht
 .2:	lda.wx stack+6
 	cmp.wx stack+3
-	bpl .3
+	beq .3
 	bpl .pht
 .3:	DS.B 6, $e8 ; 6x inx
 	txs

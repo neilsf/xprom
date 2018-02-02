@@ -118,15 +118,15 @@ class Factor: Node
                             break;
                         case 'w':
                             this.as_byte ="\tpbyte _"~variable.name~"\n";
-                            this.as_word ="\tpword _"~variable.name~"\n";
+                            this.as_word ="\tpwordvar _"~variable.name~"\n";
                             this.as_int = this.as_word ~ "\tphzero\n";
                             this.as_real = "\tword2real\n";
                             this.expr_type = 'w';
                             break;
                         case 'i':
                             this.as_byte ="\tpbyte _"~variable.name~"\n";
-                            this.as_word ="\tpword _"~variable.name~"\n";
-                            this.as_int ="\tpint _"~variable.name~"\n";
+                            this.as_word ="\tpwordvar _"~variable.name~"\n";
+                            this.as_int ="\tpintvar _"~variable.name~"\n";
                             this.expr_type = 'i';
                             break;
                         case 'r':
