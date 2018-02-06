@@ -2,17 +2,19 @@ program relations_test
 
 global int x
 global int y
+global int z
 global byte a
 
 begin
-    x = 124500
+    x = 86700
     y = 32
-    a = x < y
-    put "Result of x < y: ", a+48, 13
-    a = x <= y
-    put "Result of x <= y: ", a+48, 13
-    a = x > y
-    put "Result of x > y: ", a+48, 13
-    a = x >= y
-    put "Result of x >= y: ", a+48, 13
+    z = 86700
+    a = x < z
+    put "Result of x < z: ", a+48, 13
+    a = x <= z
+    put "Result of x <= z: ", a+48, 13
+    a = x > z
+    put "Result of x > z: ", a+48, 13
+    a = x >= z
+    put "Result of x >= z: ", a+48, 13
 end

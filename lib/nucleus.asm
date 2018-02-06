@@ -350,51 +350,46 @@ QINT	 	EQU $bc9b
 	txs
 	pzero
 	ENDM
+	
+	; Helper macro for all int comparisons
+	MAC _icomparison
+	tsx
+	lda.wx stack+6
+    cmp.wx stack+3
+    lda.wx stack+5
+    sbc.wx stack+2
+    lda.wx stack+4
+    sbc.wx stack+1
+    bvc *+4
+    eor #80
+	ENDM
 
 	; Compare two ints on stack for less than
 	MAC cmpilt
-	tsx
-	lda.wx stack+4
-	cmp.wx stack+1
-	beq .1
-	bpl .phf
-.1:	lda.wx stack+5
-	cmp.wx stack+2
-	beq .2
-	bpl .phf
-.2:	lda.wx stack+6
-	cmp.wx stack+3
-	bpl .phf
+	_icomparison
+	bmi .pht
 	DS.B 6, $e8 ; 6x inx
 	txs
-	pone
+	pzero
 	jmp *+13
-.phf:	
+.pht:
 	DS.B 6, $e8 ; 6x inx	
 	txs
-	pzero
+	pone
 	ENDM
-
+	
 	; Compare two ints on stack for greater than or equal
 	MAC cmpigte
-	tsx
-	lda.wx stack+4
-	cmp.wx stack+1
-	bmi .phf
-	lda.wx stack+5
-	cmp.wx stack+2
-	bmi .phf
-	lda.wx stack+6
-	cmp.wx stack+3
-	bmi .phf
+	_icomparison
+	bpl .pht
 	DS.B 6, $e8 ; 6x inx
 	txs
-	pone
+	pzero
 	jmp *+13
-.phf:
+.pht:
 	DS.B 6, $e8 ; 6x inx	
 	txs
-	pzero
+	pone
 	ENDM
 
 	; Compare two ints on stack for less than or equal
