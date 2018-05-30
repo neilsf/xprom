@@ -1,0 +1,11 @@
+program types_test
+
+global byte b
+global word w
+global int i
+
+begin
+    b = 150
+    w = 63000
+    i = w + b
+end

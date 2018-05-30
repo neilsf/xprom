@@ -1,0 +1,11 @@
+program division_test
+
+global int x
+global int y
+
+begin
+    x = 169400
+    y = -5900
+    put "The result is: "
+    out x/y
+end

@@ -1,0 +1,8 @@
+program modulus
+begin
+    out 89 % 10
+    put 13
+    out 9549 % 500
+    put 13
+    out 490710 % 100000
+end

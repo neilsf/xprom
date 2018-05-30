@@ -1,0 +1,11 @@
+program multiply
+
+global int x
+global int y
+global int z
+
+begin
+    x = -170
+    y = 5400
+    z = x * y
+end
