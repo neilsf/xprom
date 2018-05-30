@@ -1,5 +1,17 @@
 program printing_test
 
+global byte a
+global word b
+global int c
+
 begin
+    a = 7
+    b = 59430
+    c = - 456100
     put "Hello world ", "And again ", 13
+    out a
+    put 13
+    out b
+    put 13
+    out c
 end

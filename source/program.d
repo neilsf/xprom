@@ -5,6 +5,7 @@ import excess;
 import expression;
 import procedure;
 import promal_stdlib.put;
+import promal_stdlib.p_out;
 
 struct Variable {
     ushort location;
@@ -144,7 +145,6 @@ class Program
     void processProgram(ParseTree node)
     {
     	auto program_id = node.children[0];
-	    writeln("/* PROGRAM "~program_id.matches[0]~" */");
     }
 
     void constDef(ParseTree node)
@@ -307,6 +307,10 @@ class Program
         switch(procname) {
             case "put":
                 auto dispatcher = new Put(node, this);            
+                break;
+
+            case "out":
+                auto dispatcher = new Out(node, this);            
                 break;
             
             default:

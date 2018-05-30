@@ -5,7 +5,18 @@ reserved0	EQU $fb
 reserved1	EQU $fc
 reserved2	EQU $fd
 reserved3	EQU $fe
+
 reserved4	EQU $ff
+
+reserved5	EQU $02
+reserved6	EQU $03
+
+reserved7	EQU $04
+reserved8	EQU $05
+
+reserved9	EQU $06
+reservedA	EQU $07
+
 stack 		EQU $0100
 
 FAC 		EQU $61
@@ -547,7 +558,337 @@ QINT	 	EQU $bc9b
 .end:	
 	pha
 	ENDM
+	
+	;Multiply words at reserved0 and reserved2, with 16-bit result at reserved2
+	;and 16-bit overflow at reserved5
+NUCL_MUL16	SUBROUTINE
+	ldx #$11		
+	lda #$00
+	sta reserved5
+	clc
+.1:	ror
+	ror reserved5
+	ror reserved1
+	ror reserved0
+	dex
+	beq .q
+	bcc .1
+	sta reserved6
+	lda reserved5
+	clc
+	adc reserved2
+	sta reserved5
+	lda reserved6
+	adc reserved3
+	jmp .1
+.q:	sta reserved6
+	rts
+	
+	; Multiply words on stack
+	MAC mulw
+	pla
+	sta reserved1
+	pla
+	sta reserved0
+	pla
+	sta reserved3
+	pla
+	sta reserved2
+	jsr NUCL_MUL16
+	lda reserved0
+	pha
+	lda reserved1
+	pha
+	ENDM
+	
+	; Convert integer to its two's complement
+	MAC twoscomplement_of_int
+	lda {1}+2
+	eor #$ff
+	sta {1}+2
+	lda	{1}+1
+	eor #$ff
+	sta {1}+1
+	lda	{1}
+	eor #$ff
+	clc
+	adc #$01
+	sta	{1}
+	ENDM
+	
+	; Signed 24-bit integer multiply routine	
+signed_mul24	SUBROUTINE
+	ldx #$00
+	lda reserved0+2
+	bpl .skip
+	twoscomplement_of_int reserved0
+	inx
+.skip
+	lda reserved5+2				
+	bpl .skip2
+	twoscomplement_of_int reserved5
+	inx
+.skip2
+	jsr unsigned_mul24
+	txa
+	and #$01
+	beq .q
+	twoscomplement_of_int reserved8
+.q	rts
 
+	; Unsigned 24-bit multiply routine
+unsigned_mul24	SUBROUTINE	
+	lda #$00
+	sta reserved8
+	sta reserved8+1
+	sta reserved8+2
+
+.loop
+	lda reserved5
+	bne .nz
+	lda reserved5+1
+	bne .nz
+	lda reserved5+2
+	bne .nz
+	rts
+.nz
+	lda reserved5
+	and #$01
+	beq .skip
+	
+	lda reserved0
+	clc
+	adc reserved8
+	sta reserved8
+	
+	lda reserved0+1
+	adc reserved8+1
+	sta reserved8+1
+	
+	lda reserved0+2
+	adc reserved8+2
+	sta reserved8+2
+
+.skip
+	asl reserved0 
+	rol reserved0+1
+	rol reserved0+2
+	lsr reserved5+2
+	ror reserved5+1
+	ror reserved5
+
+	jmp .loop
+	
+	; Multiply integers on stack
+	MAC muli
+	pli2var reserved0
+	pli2var reserved5
+	jsr signed_mul24
+	pintvar reserved8
+	ENDM
+	
+	; 8 bit division routine
+	; submitted by Graham at CSDb forum
+	
+NUCL_DIV8	SUBROUTINE
+	asl reserved0
+	lda #$00
+	rol
+
+	ldx #$08
+.loop1
+	cmp reserved1
+	bcc *+4
+	sbc reserved1
+	rol reserved0
+	rol
+	dex
+	bne .loop1
+   
+	ldx #$08
+.loop2
+   	cmp reserved1
+	bcc *+4
+	sbc reserved1
+	rol reserved2
+	asl
+	dex
+	bne .loop2
+	rts
+	
+	; Divide two bytes on stack
+	MAC divb
+	pla
+	sta reserved1
+	pla
+	sta reserved0
+	jsr NUCL_DIV8
+	lda reserved0
+	pha
+	ENDM
+	
+	; Two bytes' modulus on stack
+	MAC modb
+	pla
+	sta reserved1
+	pla
+	sta reserved0
+	jsr NUCL_DIV8
+	lda reserved2
+	pha
+	ENDM
+
+	; 16 bit division routine
+	; Author: unknown
+	
+NUCL_DIV16 SUBROUTINE
+.divisor 	EQU reserved0
+.dividend 	EQU reserved2
+.remainder 	EQU reserved5
+.result 	EQU .dividend ; save memory by reusing divident to store the result
+
+	lda #0	        ;preset remainder to 0
+	sta .remainder
+	sta .remainder+1
+	ldx #16	        ;repeat for each bit: ...
+.divloop:
+	asl .dividend	;dividend lb & hb*2, msb -> Carry
+	rol .dividend+1	
+	rol .remainder	;remainder lb & hb * 2 + msb from carry
+	rol .remainder+1
+	lda .remainder
+	sec
+	sbc .divisor	;substract divisor to see if it fits in
+	tay	        	;lb result -> Y, for we may need it later
+	lda .remainder+1
+	sbc .divisor+1
+	bcc .skip		;if carry=0 then divisor didn't fit in yet
+
+	sta .remainder+1	;else save substraction result as new remainder,
+	sty .remainder	
+	inc .result		;and INCrement result cause divisor fit in 1 times
+.skip:
+	dex
+	bne .divloop	
+	rts
+	
+	; Divide words on stack
+	MAC divw
+	pla
+	sta reserved1
+	pla
+	sta reserved0
+	pla
+	sta reserved3
+	pla
+	sta reserved2
+	jsr NUCL_DIV16
+	lda reserved2
+	pha
+	lda reserved1
+	pha
+	ENDM
+	
+	; Two words' modulus on stack
+	MAC modw
+	pla
+	sta reserved1
+	pla
+	sta reserved0
+	pla
+	sta reserved3
+	pla
+	sta reserved2
+	jsr NUCL_DIV16
+	lda reserved2
+	pha
+	lda reserved1
+	pha
+	ENDM
+	
+	; 24 bit signed division
+	
+NUCL_DIV24	SUBROUTINE
+	ldx #$00
+	lda reserved8+2
+	bpl .skip
+	twoscomplement_of_int reserved8
+	inx
+.skip
+	lda reserved5+2		
+	bpl .skip2
+	twoscomplement_of_int reserved5
+	inx
+.skip2
+	txa
+	pha
+	jsr NUCL_UDIV24
+	pla
+	and #$01
+	beq .q
+	twoscomplement_of_int reserved5
+.q	rts
+	
+	; 24 bit unsigned division routine
+	; Author: unknown
+	
+NUCL_UDIV24	SUBROUTINE
+remainder	EQU	reserved0
+dividend	EQU reserved5
+divisor		EQU	reserved8
+pztemp		EQU reserved3
+	
+	lda #0	        ;preset remainder to 0
+	sta remainder
+	sta remainder+1
+	sta remainder+2
+	ldx #24	        ;repeat for each bit: ...
+
+.divloop:
+	asl dividend	;dividend lb & hb*2, msb -> Carry
+	rol dividend+1	
+	rol dividend+2
+	rol remainder	;remainder lb & hb * 2 + msb from carry
+	rol remainder+1
+	rol remainder+2
+	lda remainder
+	sec
+	sbc divisor	;substract divisor to see if it fits in
+	tay	        ;lb result -> Y, for we may need it later
+	lda remainder+1
+	sbc divisor+1
+	sta pztemp
+	lda remainder+2
+	sbc divisor+2
+	bcc .skip	;if carry=0 then divisor didn't fit in yet
+
+	sta remainder+2	;else save substraction result as new remainder,
+	lda pztemp
+	sta remainder+1
+	sty remainder	
+	inc dividend 	;and INCrement result cause divisor fit in 1 times
+
+.skip:
+	dex
+	bne .divloop	
+	rts
+	
+	; Divide integers on stack
+	MAC divi
+	pli2var reserved8
+	pli2var reserved5
+	jsr NUCL_DIV24
+	pintvar reserved5
+	ENDM
+	
+	; Two integers' modulus on stack
+	MAC modi
+	pli2var reserved8
+	pli2var reserved5
+	jsr NUCL_DIV24
+	pintvar reserved0
+	ENDM
+	
 	; Perform OR on top 2 bytes of stack
 	MAC orb
 	pla
@@ -556,7 +897,7 @@ QINT	 	EQU $bc9b
 	ora reserved1
 	pha 
 	ENDM
-
+	
 	; Perform AND on top 2 bytes of stack
 	MAC andb
 	pla
@@ -584,6 +925,91 @@ QINT	 	EQU $bc9b
 .skip:
 	pone			
 	ENDM
+	
+	; Negate byte on stack (return twos complement)
+	MAC negbyte
+	pla
+	eor #$FF
+	clc
+	adc #$01
+	pha
+	ENDM
+	
+	; Negate word on stack (return twos complement)
+	MAC negword
+	tsx
+	lda.wx stack+1
+	eor #$ff
+	sta.wx stack+1
+	lda.wx stack+2
+	eor #$ff
+	clc
+	adc #$01
+	sta.wx stack+2
+	bcc *+5
+	inc.wx stack+1
+	ENDM
+	
+	; TODO
+	; Negate int on stack
+	MAC negint
+	tsx
+	lda.wx stack+1
+	eor #$ff
+	sta.wx stack+1
+	lda.wx stack+2
+	eor #$ff
+	clc
+	adc #$01
+	sta.wx stack+2
+	bcc *+5
+	inc.wx stack+1
+	ENDM
+	
+	; Bitwise left-shift byte on stack
+	MAC lshb
+	pla
+	asl
+	pha
+	ENDM
+	
+	; Bitwise left-shift word on stack
+	MAC lshw
+	tsx
+	asl.wx stack+2
+	rol.ws stack+1
+	ENDM
+	
+	; Bitwise left-shift int on stack
+	MAC lshi
+	tsx
+	asl.wx stack+3
+	rol.ws stack+2
+	rol.ws stack+1
+	ENDM
+	
+	; Bitwise right-shift byte on stack
+	MAC rshb
+	pla
+	lsr
+	pha
+	ENDM
+	
+	; Bitwise right-shift word on stack
+	MAC rshw
+	tsx
+	lsr.wx stack+1
+	ror.ws stack+2
+	ENDM
+	
+	; Bitwise right-shift int on stack
+	MAC rshi
+	tsx
+	lsr.wx stack+1
+	ror.ws stack+2
+	ror.ws stack+3
+	ENDM
+
 
 	; TODO
 	; Rewrite all REAL funcs to use own

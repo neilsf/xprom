@@ -20,7 +20,7 @@ class Factor: Node
     char force_type;
 
     this(ParseTree node, Program program)
-    {
+    {   
         super(node, program);
     }
  

@@ -6,7 +6,7 @@ global int z
 global byte a
 
 begin
-    x = 86700
+    x = -86700
     y = 32
     z = 86700
     a = x < z

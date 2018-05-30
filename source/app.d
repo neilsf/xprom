@@ -50,7 +50,7 @@ PROMAL:
     Gte < ">=" Simplexp
     Gt < ">" Simplexp
 
-    Simplexp < (Minus / Term) (Plus / Minus)*
+    Simplexp < (Term / Minus) (Plus / Minus)*
 
     Minus < "-" Term
     Plus < "+" Term
@@ -74,7 +74,7 @@ PROMAL:
 
 	Charlit < "'" Char "'"
 
-    Stdlib_procname <- "abort" / "blkmov" / "close" / "curset" / "dir" / "edline" / "exit" / "fill" / "jsr" / "mlget" / "movstr" / "open" / "output" / "outputf" / "put" / "putblkf" / "putf" / "redirect" / "rename" / "zapfile"
+    Stdlib_procname <- "abort" / "blkmov" / "close" / "curset" / "dir" / "edline" / "exit" / "fill" / "jsr" / "mlget" / "movstr" / "open" / "output" / "outputf" / "put" / "out" / "putblkf" / "putf" / "redirect" / "rename" / "zapfile"
     Keyword <- "end" / "program" / "own" / "export" / "con" / "byte"/ "word" / "int" / "real" / "ext" / "global" / "data" / "proc" / "func" / "begin" / "end" / "asm" / "at" / "arg" / "list" / "if" / "choose" / "while" / "repeat" / "for" / "else" / "return" / "nothing" / "refuge" / "escape" / "break" / "next" / "case" / "else" / "until" / "and" / "or" / "xor" / "true" / "false" / "not" / "call"
     Number <~ Scientific / Floating / Integer / Hexa
     String <~ doublequote (!doublequote Char)* doublequote
@@ -89,9 +89,8 @@ PROMAL:
     Scientific <~ Floating ( ('e' / 'E' ) Integer )?
     Floating   <~ Integer ('.' Unsigned )?
     Unsigned   <~ [0-9]+
-    Integer    <~ Sign? Unsigned
+    Integer    <~ "-"? Unsigned
     Hexa       <~ "$" [0-9a-fA-F]+
-    Sign       <- '-' / '+'
     
     Vartype    <- "byte" / "word" / "int" / "real"
 
@@ -131,11 +130,11 @@ void main(string[] args)
     auto ast = PROMAL(source);
 
     /* TODO remove */
-    
+    /*
     writeln(ast);
     writeln("Name: "~ast.name);
     writeln("Success? " ~ (ast.successful == true ? "Yes" : "No"));
-
+*/
     Program program = new Program;
     program.processAst(ast);
 

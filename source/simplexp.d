@@ -29,8 +29,7 @@ class Simplexp: Node
 
         if(this.node.children[0].name == "PROMAL.Term") {
 
-            auto term0 = new Term(this.node.children[0], this.program);
-            term0.eval();            
+            auto term0 = new Term(this.node.children[0], this.program);          
             this.as_byte = term0.as_byte;
             this.as_word = term0.as_word;
             this.as_int = term0.as_int;
@@ -39,7 +38,6 @@ class Simplexp: Node
         }
         else if(this.node.children[0].name == "PROMAL.Minus") {
             auto term0 = new Term(this.node.children[0].children[0], this.program);
-            term0.eval();      
             this.as_byte = term0.as_byte ~= "\tnegbyte\n";
             this.as_word = term0.as_word ~= "\tnegword\n";
             this.as_int = term0.as_int ~= "\tnegint\n";
@@ -53,8 +51,7 @@ class Simplexp: Node
     	    ParseTree term = this.node.children[term_index];
 
             Term t = new Term(term.children[0], this.program);
-            t.eval();
-
+           
             this.expr_type = this.getHigherType(t.expr_type, this.expr_type);
                 
     		switch(term.name) {

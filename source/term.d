@@ -7,6 +7,7 @@ import factor;
 import std.conv;
 import std.string;
 import std.stdio;
+import std.c.stdlib;
 
 class Term: Node
 {
@@ -21,7 +22,7 @@ class Term: Node
     
     string eval()
     {
-       string ret_string = "";
+        string ret_string = "";
     	
         ubyte factor_index = 0;
 
@@ -35,15 +36,15 @@ class Term: Node
             this.as_word = ffact.as_word;
             this.as_int = ffact.as_int;
             this.as_real = ffact.as_real;
+            return ret_string;
         }
         
     	for(factor_index = 1; factor_index < node.children.length; factor_index++) {
 
             ParseTree factor = node.children[factor_index];
             Factor fact = new Factor(factor.children[0], this.program);
-            fact.eval();
                         
-    		final switch(factor.name) {
+    		switch(factor.name) {
     				
 	  			case "PROMAL.Mult":
                     this.doOperation(factor_index, fact, ffact, "mulb", "mulw", "muli", "mulr");                    
@@ -70,6 +71,11 @@ class Term: Node
                     }
                     this.doOperation(factor_index, fact, ffact, "rshb", "rshw", "rshi", "");
 	    			break;
+
+                default:
+                    writeln("Operation not supported");
+                    exit(-1);
+                    break;
     		}
             factor_index++;
     	}
@@ -109,7 +115,7 @@ class Term: Node
                 case 'b':
                     this.as_byte ~= ffact.as_byte;
                     this.as_byte ~= fact.as_byte;
-                    this.as_byte ~= byte_op ~ "\n";
+                    this.as_byte ~= "\t"~byte_op ~ "\n";
                     this.as_word ~= this.as_byte ~ "\tphzero\n";
                     this.as_int ~= this.as_word ~ "\tphzero\n";
                     this.as_real ~= this.as_byte ~ "\tbyte2real\n";
@@ -118,7 +124,7 @@ class Term: Node
                 case 'w':
                     this.as_word ~= ffact.as_word;
                     this.as_word ~= fact.as_word;
-                    this.as_word ~= word_op ~ "\n";
+                    this.as_word ~= "\t"~word_op ~ "\n";
                     this.as_int ~= this.as_word ~ "\tphzero\n";
                     this.as_real ~= this.as_word ~ "\tword2real\n";
                     this.expr_type = 'w';
@@ -127,7 +133,7 @@ class Term: Node
                 case 'i':
                     this.as_int ~= ffact.as_int;
                     this.as_int ~= fact.as_int;
-                    this.as_int ~= int_op ~ "\n";
+                    this.as_int ~= "\t"~int_op ~ "\n";
                     this.as_real~= this.as_int ~ "\tint2real\n";
                     this.expr_type = 'i';
                 break;
@@ -135,7 +141,7 @@ class Term: Node
                 case 'r':
                     this.as_real ~= ffact.as_real;
                     this.as_real ~= fact.as_real;
-                    this.as_real ~= real_op ~ "\n";
+                    this.as_real ~= "\t"~real_op ~ "\n";
                     this.expr_type = 'r';
                 break;
             }
@@ -158,7 +164,7 @@ class Term: Node
 
                 case 'w':
                     this.as_word ~= fact.as_word;
-                    this.as_word ~= word_op ~ "\n";
+                    this.as_word ~= "\t"~word_op ~ "\n";
                     this.as_int ~= this.as_word ~ "\tphzero\n";
                     this.as_real ~= this.as_word ~ "\tword2real\n";
                     this.expr_type = 'w';
@@ -166,7 +172,7 @@ class Term: Node
 
                 case 'i':
                     this.as_int ~= fact.as_int;
-                    this.as_int ~= int_op ~ "\n";
+                    this.as_int ~= "\t"~int_op ~ "\n";
                     this.as_real~= this.as_int ~ "\tint2real\n";
                     this.expr_type = 'i';
                 break;
@@ -174,7 +180,7 @@ class Term: Node
                 case 'r':
                     this.as_real ~= ffact.as_real;
                     this.as_real ~= fact.as_real;
-                    this.as_real ~= real_op ~ "\n";
+                    this.as_real ~= "\t"~real_op ~ "\n";
                     this.expr_type = 'r';
                 break;
             }
