@@ -1,0 +1,35 @@
+program ftest
+
+global byte a
+global byte b
+
+begin
+    a = 120
+    b = 120
+
+    if a < b
+        put "yes, a < b is true", 13
+    else
+        put "no, a < b is false", 13
+    end if
+    if a <= b
+        put "yes, a <= b is true", 13
+    else
+        put "no, a <= b is false", 13
+    end if
+    if a > b
+        put "yes, a > b is true", 13
+    else
+        put "no, a > b is false", 13
+    end if
+    if a >= b
+        put "yes, a >= b is true", 13
+    else
+        put "no, a >= b is false", 13
+    end if
+    if a = b
+        put "yes, a = b is true", 13
+    else
+        put "no, a = b is false", 13
+    end if
+end
